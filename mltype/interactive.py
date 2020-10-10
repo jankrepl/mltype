@@ -180,7 +180,8 @@ class TypedTextWriter:
         for i, (alist, ch) in enumerate(zip(self.tt.actions, self.tt.text)):
             y, x = divmod(i_start + i, width)
 
-            if not alist:
+            if i == self.current_ix or not alist:
+                # character that we stand on needs to have backspace styling
                 status = STATUS_BACKSPACE  # same styling
             else:
                 status = alist[-1].status
