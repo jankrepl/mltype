@@ -7,8 +7,7 @@ import pytorch_lightning as pl
 import torch
 import tqdm
 
-from mltype.base import CACHE_DIR
-
+from mltype.utils import get_cache_dir
 
 def create_data_language(
     text, vocabulary, window_size=2, fill_strategy="zeros", verbose=False
@@ -420,7 +419,7 @@ def run_train(
     dense_size=32,
     n_layers=1,
 ):
-    output_path = CACHE_DIR / "languages" / name
+    output_path = get_cache_dir() / "languages" / name
 
     if output_path.exists():
         raise FileExistsError(f"The model {name} already exists")
@@ -462,7 +461,7 @@ def run_train(
     )
 
     logger = pl.loggers.MLFlowLogger(
-        "mltype", save_dir=CACHE_DIR / "logs" / "mlruns"
+        "mltype", save_dir=get_cache_dir() / "logs" / "mlruns"
     )
     logger.log_hyperparams(
         {

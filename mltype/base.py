@@ -9,9 +9,6 @@ import pickle
 import numpy as np
 from tqdm import tqdm
 
-CACHE_DIR = pathlib.Path.home() / ".mltype"
-
-
 class CharacterSampler(ABC):
     """Generates a character given previous characters."""
 
