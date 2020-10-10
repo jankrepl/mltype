@@ -224,8 +224,8 @@ def sample_text(
             Allows reproducibility.
 
     top_k : None or int
-            If specified, we only sample from the top k most probably characters.
-            Otherwise all of them.
+            If specified, we only sample from the top k most probable
+            characters. Otherwise all of them.
 
     verbose : bool
             Controls verbosity.
@@ -288,8 +288,8 @@ class SingleCharacterLSTM(pl.LightningModule):
     Parameters
     ----------
     vocab_size : int
-            Size of the vocabulary. Necessary since we are encoding each character
-            as a one hot vector.
+            Size of the vocabulary. Necessary since we are encoding each
+            character as a one hot vector.
 
     hidden_size : int
             Hidden size of the recurrent cell.
@@ -339,8 +339,8 @@ class SingleCharacterLSTM(pl.LightningModule):
         x : torch.Tensor
                 Input features of shape `(batch_size, window_size, vocab_size)`.
                 Note that the provided `vocab_size` needs to be equal to the one
-                provided in the constructor. The remaining dimensions (`batch_size`
-                and `window_size`) can be any positive integers.
+                provided in the constructor. The remaining dimensions
+                (`batch_size` and `window_size`) can be any positive integers.
 
         Returns
         -------

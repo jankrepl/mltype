@@ -4,7 +4,7 @@ from collections import defaultdict
 
 import numpy as np
 
-from mltype.base import STATUS_CORRECT, TypedText
+from mltype.base import STATUS_CORRECT
 
 
 def times_per_character(tt):

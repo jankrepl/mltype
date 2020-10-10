@@ -19,7 +19,8 @@ def cli():
     "-e",
     "--end_line",
     type=int,
-    help="The end line of the excerpt to use. Needs to be used together with start-line.",
+    help="The end line of the excerpt to use. Needs to be used together with "
+    "start-line.",
 )
 @click.option(
     "-f",
@@ -37,7 +38,8 @@ def cli():
     "-l",
     "--n_lines",
     type=int,
-    help="Number of consecutive lines to be selected at random. Cannot be used together with start-line and end-line.",
+    help="Number of consecutive lines to be selected at random. Cannot be "
+    "used together with start-line and end-line.",
 )
 @click.option(
     "-o",
@@ -50,7 +52,8 @@ def cli():
     "-s",
     "--start_line",
     type=int,
-    help="the start line of the excerpt to use. needs to be used together with end-line.",
+    help="the start line of the excerpt to use. needs to be used together "
+    "with end-line.",
 )
 @click.option(
     "-t",
@@ -84,7 +87,7 @@ def file(
             "line or the n_lines to be randomly selected."
         )
 
-    all_lines = [l.strip() for l in path.readlines()]
+    all_lines = [line.strip() for line in path.readlines()]
     n_all_lines = len(all_lines)
 
     if mode_exact:
@@ -161,7 +164,8 @@ def list():
     "--fill-strategy",
     type=str,
     default="skip",
-    help="Either zeros or skip. Determines how deal with out of vocabulary characters",
+    help="Either zeros or skip. Determines how deal with out of vocabulary "
+    "characters",
     show_default=True,
 )
 @click.option(

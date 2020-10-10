@@ -3,7 +3,6 @@
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from datetime import datetime
-import pathlib
 import pickle
 
 import numpy as np
@@ -95,7 +94,11 @@ class Language(CharacterSampler):
 
         vocab = "".join(
             sorted(
-                [ch for ch, count in counter.items() if count >= min_char_count]
+                [
+                    ch
+                    for ch, count in counter.items()
+                    if count >= min_char_count
+                ]
             )
         )
 
@@ -113,7 +116,7 @@ class Language(CharacterSampler):
             for i in range(window_size, len(text)):
                 try:
                     coords = tuple(
-                        ch2ix[ch] for ch in text[i - window_size : i + 1]
+                        ch2ix[ch] for ch in text[i - window_size: i + 1]
                     )
                 except KeyError:
                     # contains a character that did not make it to the vocab
@@ -158,7 +161,7 @@ class Language(CharacterSampler):
 
         if self.window_size:
             coords = tuple(
-                self._ch2ix[ch] for ch in prev_s[-self.window_size :]
+                self._ch2ix[ch] for ch in prev_s[-self.window_size:]
             )
         else:
             coords = tuple()

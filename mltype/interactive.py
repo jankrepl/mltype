@@ -1,10 +1,7 @@
 """Module implementing interaction logic."""
 import bisect
 import curses
-import os
 import pathlib
-from pprint import pprint
-import sys
 
 from mltype.base import TypedText
 from mltype.base import STATUS_BACKSPACE, STATUS_CORRECT, STATUS_WRONG
@@ -193,7 +190,10 @@ class TypedTextWriter:
                     # Make sure the normal cursor is visible
                     status = "replay"
 
-            if self.target_wpm is not None and i == i_target != self.current_ix:
+            if (
+                self.target_wpm is not None
+                and i == i_target != self.current_ix
+            ):
                 if status in {STATUS_BACKSPACE, STATUS_CORRECT}:
                     # Make sure the normal cursor is visible
                     status = "target"
@@ -308,7 +308,9 @@ def main_basic(text, force_perfect, output_file, instant_death, target_wpm):
     if output_file is not None:
         tt.save(pathlib.Path(output_file))
 
-    print(f"Accuracy: {tt.compute_accuracy():.1f}\nWPM: {tt.compute_wpm():.1f}")
+    print(
+        f"Accuracy: {tt.compute_accuracy():.1f}\nWPM: {tt.compute_wpm():.1f}"
+    )
 
 
 def main_replay(
