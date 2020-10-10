@@ -331,31 +331,55 @@ class SingleCharacterLSTM(pl.LightningModule):
 
         self.activation_layer = torch.nn.Softmax(dim=1)
 
-    def forward(self, x):
+    def forward(self, x, h=None, c=None):
         """Perform forward pass.
 
         Parameters
         ----------
         x : torch.Tensor
-                Input features of shape `(batch_size, window_size, vocab_size)`.
-                Note that the provided `vocab_size` needs to be equal to the one
-                provided in the constructor. The remaining dimensions
-                (`batch_size` and `window_size`) can be any positive integers.
+            Input features of shape `(batch_size, window_size, vocab_size)`.
+            Note that the provided `vocab_size` needs to be equal to the one
+            provided in the constructor. The remaining dimensions
+            (`batch_size` and `window_size`) can be any positive integers.
+
+        h, c : torch.Tensor
+            Hidden states of shape `(n_layers, batch_size, hidden_size)`. Note
+            that if provided we enter a continuation mode. In this case
+            to generate the prediction we just use the last character and the
+            hidden state for the prediction. Note that in this case
+            we enforce that `x.shape=(batch_size, 1, vocab_size)`.
 
         Returns
         -------
         probs : torch.Tensor
-                Tensor of shape `(batch_size, vocab_size)`. For each sample
-                it represents the probability distribution over all characters
-                in the vocabulary.
+            Tensor of shape `(batch_size, vocab_size)`. For each sample
+            it represents the probability distribution over all characters
+            in the vocabulary.
+
+        h_n, c_n : torch.Tensor
+            New Hidden states of shape `(n_layers, batch_size, hidden_size)`.
         """
-        _, (h_n, _) = self.rnn_layer(x)
+        continuation_mode = h is not None and c is not None
+
+
+        if continuation_mode:
+            if not (x.ndim == 3 and x.shape[1] == 1):
+                raise ValueError("Wrong input for the continuation mode")
+
+            _, (h_n, c_n) = self.rnn_layer(x, (h, c))
+
+        else:
+            _, (h_n, c_n) = self.rnn_layer(x)
+
         average_h_n = h_n.mean(dim=0)
         x = self.linear_layer1(average_h_n)
         logits = self.linear_layer2(x)
         probs = self.activation_layer(logits)
 
-        return probs
+        if continuation_mode:
+            return probs, h_n, c_n
+        else:
+            return probs
 
     def training_step(self, batch, batch_idx):
         """Implement training step.
