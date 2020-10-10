@@ -1,7 +1,6 @@
 """Module implementing interaction logic."""
 import bisect
 import curses
-from curses import wrapper
 import os
 import pathlib
 from pprint import pprint
@@ -295,10 +294,11 @@ def main_basic(text, force_perfect, output_file, instant_death, target_wpm):
     target_wpm : int or None
         The desired speed to be displayed as a guide.
     """
+    text_stripped = text.strip()
 
     tt = curses.wrapper(
         run_loop,
-        text,
+        text_stripped,
         force_perfect=force_perfect,
         replay_tt=None,
         instant_death=instant_death,
