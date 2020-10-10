@@ -1,10 +1,8 @@
 """Command line interface."""
 import pathlib
+import warnings
 
 import click
-import numpy as np
-
-import warnings
 
 warnings.filterwarnings("ignore")
 
@@ -72,6 +70,8 @@ def file(
     target_wpm,
 ):
     """Type text from a file"""
+    import numpy as np
+
     from mltype.interactive import main_basic
 
     # validation
