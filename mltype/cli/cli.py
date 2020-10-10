@@ -328,7 +328,7 @@ def raw(text, force_perfect, output_file, instant_death, target_wpm):
 @click.option("-w", "--overwrite", is_flag=True)
 def replay(replay_file, force_perfect, instant_death, overwrite, target_wpm):
     """Compete against a past performance"""
-    from mltype.utils import main_replay
+    from mltype.interactive import main_replay
 
     main_replay(
         replay_file=replay_file,
