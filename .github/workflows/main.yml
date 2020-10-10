@@ -13,18 +13,25 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install flake8 pytest
         pip install .[dev]
+
     - name: Lint with flake8
       run: |
-        flake8 . --count --exit-zero
+        flake8 mltype tests setup.py  # see tox.ini for config
+
+    - name: Check style with black
+      run: |
+        black --check -l 80 mltype tests setup.py
+
     - name: Test with pytest
       run: |
-        pytest
+        pytest --cov=mltype/  # see tox.ini for config
