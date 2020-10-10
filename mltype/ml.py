@@ -187,8 +187,15 @@ def sample_char(
 
     return np.random.choice(vocabulary, p=probs)
 
+
 def sample_char_with_state(
-    network, vocabulary, h=None, c=None, previous_char=None, random_state=None, top_k=None
+    network,
+    vocabulary,
+    h=None,
+    c=None,
+    previous_char=None,
+    random_state=None,
+    top_k=None,
 ):
     """Sample a character given network probability prediciton (with a state).
 
@@ -246,6 +253,7 @@ def sample_char_with_state(
         probs = probs_new / probs_new.sum()
 
     return np.random.choice(vocabulary, p=probs), h_n, c_n
+
 
 def sample_text(
     n_chars,
@@ -307,6 +315,7 @@ def sample_text(
 
     return res
 
+
 def sample_text_no_window(
     n_chars,
     network,
@@ -363,7 +372,12 @@ def sample_text_no_window(
     for _ in iterable:
         previous_char = res[-1] if res else None
         new_ch, h, c = sample_char_with_state(
-            network, vocabulary, h=h, c=c, previous_char=previous_char, top_k=top_k
+            network,
+            vocabulary,
+            h=h,
+            c=c,
+            previous_char=previous_char,
+            top_k=top_k,
         )
         res += new_ch
 

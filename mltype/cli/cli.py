@@ -6,6 +6,7 @@ import click
 
 warnings.filterwarnings("ignore")
 
+
 @click.group()
 def cli():
     """Tool for improving typing speed and accuracy."""
@@ -120,7 +121,7 @@ def file(
 
 @cli.command()
 def list():
-    """List all language models and mentors"""
+    """List all language models"""
     from mltype.utils import get_cache_dir
 
     languages_dir = get_cache_dir() / "languages"
