@@ -34,4 +34,4 @@ jobs:
 
     - name: Test with pytest
       run: |
-        pytest --cov=mltype/  # see tox.ini for config
+        pytest --cov=mltype  # see tox.ini for config
