@@ -4,11 +4,6 @@ import pathlib
 import click
 import numpy as np
 
-from mltype.data import file2text, folder2text
-from mltype.interactive import main_basic, main_replay
-from mltype.ml import load_model, run_train, sample_text
-from mltype.utils import get_cache_dir
-
 import warnings
 
 warnings.filterwarnings("ignore")
@@ -77,7 +72,9 @@ def file(
     target_wpm,
 ):
     """Type text from a file"""
-    # Validation
+    from mltype.interactive import main_basic
+
+    # validation
     mode_exact = start_line is not None and end_line is not None
     mode_random = n_lines is not None
 
@@ -122,6 +119,8 @@ def file(
 @cli.command()
 def list():
     """List all language models and mentors"""
+    from mltype.utils import get_cache_dir
+
     languages_dir = get_cache_dir() / "languages"
 
     if not languages_dir.exists():
@@ -228,6 +227,9 @@ def train(
     window_size,
 ):
     """Train a language"""
+    from mltype.data import file2text, folder2text
+    from mltype.ml import run_train
+
     path_p = pathlib.Path(str(path))
 
     if not path_p.exists():
@@ -288,6 +290,8 @@ def train(
 )
 def raw(text, force_perfect, output_file, instant_death, target_wpm):
     """Provide text manually"""
+    from mltype.interactive import main_basic
+
     main_basic(
         text,
         force_perfect=force_perfect,
@@ -320,6 +324,8 @@ def raw(text, force_perfect, output_file, instant_death, target_wpm):
 @click.option("-w", "--overwrite", is_flag=True)
 def replay(replay_file, force_perfect, instant_death, overwrite, target_wpm):
     """Compete against a past performance"""
+    from mltype.utils import main_replay
+
     main_replay(
         replay_file=replay_file,
         force_perfect=force_perfect,
@@ -409,6 +415,10 @@ def sample(
     top_k,
 ):
     """Sample text from a language"""
+    from mltype.interactive import main_basic
+    from mltype.ml import load_model, sample_text
+    from mltype.utils import get_cache_dir
+
     model_folder = get_cache_dir() / "languages" / model_name
 
     network, vocabulary = load_model(model_folder)
