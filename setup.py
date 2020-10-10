@@ -7,9 +7,7 @@ LONG_DESCRIPTION = DESCRIPTION
 
 INSTALL_REQUIRES = [
     "click",
-    "mlflow",
     "numpy",
-    "pandas",
     "torch",
     "pytorch-lightning",
     "tqdm",
@@ -34,7 +32,8 @@ setup(
             "pytest",
             "pytest-coverage",
             "tox",
-        ]
+        ],
+        "mlflow": ["mlflow"],
     },
     entry_points={
         "console_scripts": [

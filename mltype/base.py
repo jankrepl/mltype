@@ -3,7 +3,6 @@
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from datetime import datetime
-import pathlib
 import pickle
 
 import numpy as np

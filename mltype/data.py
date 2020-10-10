@@ -1,6 +1,4 @@
 """Data creating and managing."""
-import pathlib
-import sys
 
 
 def file2text(filepath):
@@ -17,7 +15,7 @@ def file2text(filepath):
         All the text found in the input file.
     """
     with filepath.open("r") as f:
-        texts = [l.strip() for l in f.readlines()]
+        texts = [line.strip() for line in f.readlines()]
 
     return " ".join(texts)
 

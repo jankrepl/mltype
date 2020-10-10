@@ -1,10 +1,7 @@
 """Module implementing interaction logic."""
 import bisect
 import curses
-import os
 import pathlib
-from pprint import pprint
-import sys
 
 from mltype.base import TypedText
 from mltype.base import STATUS_BACKSPACE, STATUS_CORRECT, STATUS_WRONG

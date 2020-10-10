@@ -1,3 +1,4 @@
+from datetime import datetime
 import pathlib
 
 import numpy as np
@@ -7,6 +8,8 @@ from mltype.base import (
     Action,
     CharacterSampler,
     Language,
+    STATUS_CORRECT,
+    STATUS_WRONG,
     TypedText,
     TypedText_,
 )
@@ -65,7 +68,7 @@ class TestLanguage:
         assert len(lng.sample_many(10, prev_s="somet")) == 10
 
 
-class Action:
+class TestAction:
     def test_init(self):
         with pytest.raises(ValueError):
             Action("wa", STATUS_CORRECT, datetime.now())
