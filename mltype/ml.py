@@ -9,6 +9,7 @@ import tqdm
 
 from mltype.utils import get_cache_dir
 
+
 def create_data_language(
     text, vocabulary, window_size=2, fill_strategy="zeros", verbose=False
 ):

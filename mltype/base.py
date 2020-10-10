@@ -9,6 +9,7 @@ import pickle
 import numpy as np
 from tqdm import tqdm
 
+
 class CharacterSampler(ABC):
     """Generates a character given previous characters."""
 

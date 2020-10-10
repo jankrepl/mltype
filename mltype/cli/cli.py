@@ -125,12 +125,9 @@ def list():
     languages_dir = get_cache_dir() / "languages"
 
     if not languages_dir.exists():
-        print("No models are available")
         return
 
-    all_names = sorted(
-        [x.name for x in (languages_dir).iterdir() if x.is_file()]
-    )
+    all_names = sorted([x.name for x in languages_dir.iterdir() if x.is_file()])
     for name in all_names:
         print(name)
 
