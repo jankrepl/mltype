@@ -2,8 +2,21 @@
 import pathlib
 
 from click.testing import CliRunner
+import pytest
 
-from mltype.cli.cli import list as mlt_list
+import mltype.cli.cli
+
+
+@pytest.mark.parametrize(
+    "cmd", ["file", "list", "raw", "replay", "sample", "train"]
+)
+def test_help(cmd):
+    fun = getattr(mltype.cli.cli, cmd)
+
+    runner = CliRunner()
+    result = runner.invoke(fun, "--help")
+
+    assert result.exit_code == 0
 
 
 def test_list(tmpdir, monkeypatch):
@@ -14,6 +27,7 @@ def test_list(tmpdir, monkeypatch):
     monkeypatch.setenv("HOME", str(new_home))
 
     runner = CliRunner()
+    mlt_list = getattr(mltype.cli.cli, "list")
     result = runner.invoke(mlt_list, [])
 
     assert result.exit_code == 0
