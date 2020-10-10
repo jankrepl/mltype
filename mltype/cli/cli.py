@@ -4,10 +4,10 @@ import pathlib
 import click
 import numpy as np
 
-from mltype.base import CACHE_DIR
 from mltype.data import file2text, folder2text
 from mltype.interactive import main_basic, main_replay
 from mltype.ml import load_model, run_train, sample_text
+from mltype.utils import get_cache_dir
 
 import warnings
 
@@ -122,8 +122,14 @@ def file(
 @cli.command()
 def list():
     """List all language models and mentors"""
-    all_names = sorted([x.name for x in (CACHE_DIR / "languages").iterdir()])
-    print(all_names)
+    languages_dir = get_cache_dir() / "languages"
+
+    if not languages_dir.exists():
+        return
+
+    all_names = sorted([x.name for x in languages_dir.iterdir() if x.is_file()])
+    for name in all_names:
+        print(name)
 
 
 @cli.command()
@@ -403,7 +409,7 @@ def sample(
     top_k,
 ):
     """Sample text from a language"""
-    model_folder = CACHE_DIR / "languages" / model_name
+    model_folder = get_cache_dir() / "languages" / model_name
 
     network, vocabulary = load_model(model_folder)
     text = sample_text(
