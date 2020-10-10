@@ -3,7 +3,6 @@
 from collections import defaultdict
 
 import numpy as np
-import pandas as pd
 
 from mltype.base import STATUS_CORRECT, TypedText
 
@@ -39,5 +38,5 @@ def times_per_character(tt):
 def mean_time_per_character(tt):
     stats = times_per_character(tt)
 
-    res = pd.Series({ch: np.mean(l) for ch, l in stats.items()}).sort_values()
+    res = {ch: np.mean(l) for ch, l in stats.items()}
     return res
