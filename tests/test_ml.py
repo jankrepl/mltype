@@ -98,3 +98,59 @@ class TestSingleCharacterLSTM:
 
         assert network_loaded.hparams == hparams
         assert vocabulary_loaded == vocabulary
+
+    def test_forward_pass(self):
+        batch_size = 3
+        window_size = 2
+        hparams = {
+            "vocab_size": 4,
+            "hidden_size": 5,
+            "n_layers": 1,
+            "dense_size": 12,
+        }
+        network = SingleCharacterLSTM(**hparams)
+
+        # normal mode
+        x1 = torch.rand(batch_size, window_size, hparams["vocab_size"])
+        o1, h_n1, c_n1 = network(x1)
+
+        assert torch.is_tensor(o1)
+
+        assert o1.shape == (batch_size, hparams["vocab_size"])
+        assert h_n1.shape == (
+            hparams["n_layers"],
+            batch_size,
+            hparams["hidden_size"],
+        )
+        assert c_n1.shape == (
+            hparams["n_layers"],
+            batch_size,
+            hparams["hidden_size"],
+        )
+
+        # continuation mode
+        x2 = torch.rand(batch_size, 1, hparams["vocab_size"])
+        h = torch.rand(hparams["n_layers"], batch_size, hparams["hidden_size"])
+        c = torch.rand(hparams["n_layers"], batch_size, hparams["hidden_size"])
+
+        o2, h_n2, c_n2 = network(x2, h=h, c=c)
+
+        assert torch.is_tensor(o2)
+        assert torch.is_tensor(h_n2)
+        assert torch.is_tensor(c_n2)
+
+        assert o2.shape == (batch_size, hparams["vocab_size"])
+        assert h_n2.shape == (
+            hparams["n_layers"],
+            batch_size,
+            hparams["hidden_size"],
+        )
+        assert c_n2.shape == (
+            hparams["n_layers"],
+            batch_size,
+            hparams["hidden_size"],
+        )
+
+
+class SampleCharacter:
+    pass

@@ -121,7 +121,7 @@ def file(
 
 @cli.command()
 def list():
-    """List all language models and mentors"""
+    """List all language models"""
     from mltype.utils import get_cache_dir
 
     languages_dir = get_cache_dir() / "languages"
@@ -397,14 +397,6 @@ def replay(replay_file, force_perfect, instant_death, overwrite, target_wpm):
     is_flag=True,
     help="Show progressbar when generating text",
 )
-@click.option(
-    "-w",
-    "--window-size",
-    type=int,
-    default=40,
-    show_default=True,
-    help="Number of previous characters to consider for prediction",
-)
 def sample(
     model_name,
     n_chars,
@@ -414,24 +406,22 @@ def sample(
     output_file,
     target_wpm,
     verbose,
-    window_size,
     starting_text,
     top_k,
 ):
     """Sample text from a language"""
     from mltype.interactive import main_basic
-    from mltype.ml import load_model, sample_text
+    from mltype.ml import load_model, sample_text_no_window
     from mltype.utils import get_cache_dir
 
     model_folder = get_cache_dir() / "languages" / model_name
 
     network, vocabulary = load_model(model_folder)
-    text = sample_text(
+    text = sample_text_no_window(
         n_chars,
         network,
         vocabulary,
         initial_text=starting_text,
-        window_size=window_size,
         random_state=random_state,
         top_k=top_k,
         verbose=verbose,

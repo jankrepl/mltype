@@ -175,11 +175,8 @@ def sample_char(
     if random_state is not None:
         np.random.seed(random_state)
 
-    probs = (
-        network(torch.from_numpy(features).to(torch.float32))[0]
-        .detach()
-        .numpy()
-    )
+    out, _, _ = network(torch.from_numpy(features).to(torch.float32))
+    probs = out[0].detach().numpy()
 
     if top_k is not None:
         probs_new = np.zeros_like(probs)
@@ -189,6 +186,73 @@ def sample_char(
         probs = probs_new / probs_new.sum()
 
     return np.random.choice(vocabulary, p=probs)
+
+
+def sample_char_with_state(
+    network,
+    vocabulary,
+    h=None,
+    c=None,
+    previous_char=None,
+    random_state=None,
+    top_k=None,
+):
+    """Sample a character given network probability prediciton (with a state).
+
+    Parameters
+    ----------
+    network : torch.nn.Module
+        Trained neural network that outputs a probability distribution over
+        `vocabulary`.
+
+    vocabulary : list
+        List of unique characters.
+
+    h, c : torch.Tensor
+        Hidden states with shape `(n_layers, batch_size=1, hidden_size)`.
+        Note that if both of them are None we are at the very first character.
+
+    previous_char : None or str
+        Previous charater. None or and empty string if we are at the very
+        first character.
+
+    random_state : None or int
+        Guarantees reproducibility.
+
+    top_k : None or int
+        If specified, we only sample from the top k most probably characters.
+        Otherwise all of them.
+
+    Returns
+    -------
+    ch : str
+        A character from the vocabulary.
+    """
+    if previous_char:
+        if len(previous_char) != 1:
+            raise ValueError("One can only provide a single character")
+
+        features = text2features(previous_char, vocabulary)
+    else:
+        features = np.zeros((1, len(vocabulary)), dtype=np.bool)
+
+    features = features[None, ...]  # add batch dimension
+
+    if random_state is not None:
+        np.random.seed(random_state)
+
+    x = torch.from_numpy(features).to(torch.float32)
+    out, h_n, c_n = network(x, h, c)
+    probs = out[0].detach().numpy()
+
+    if top_k is not None:
+        probs_new = np.zeros_like(probs)
+        top_k_indices = probs.argsort()[-top_k:]
+        probs_new[top_k_indices] = probs[top_k_indices]
+
+        probs = probs_new / probs_new.sum()
+
+    return np.random.choice(vocabulary, p=probs), h_n, c_n
 
 
 def sample_text(
@@ -248,6 +312,74 @@ def sample_text(
         res += sample_char(
             network, vocabulary, initial_text=res[-window_size:], top_k=top_k
         )
+
+    return res
+
+
+def sample_text_no_window(
+    n_chars,
+    network,
+    vocabulary,
+    initial_text=None,
+    random_state=None,
+    top_k=None,
+    verbose=False,
+):
+    """Sample text by unrolling character by character predictions.
+
+    Note that keep the pass hidden states with each character prediciton
+    and there is not need to specify a window.
+
+    Parameters
+    ----------
+    n_chars : int
+            Number of characters to sample.
+
+    network : torch.nn.Module
+            Pretrained character level network.
+
+    vocabulary : list
+            List of unique characters.
+
+    initial_text : None or str
+            If specified, initial text to condition based on.
+
+    random_state : None or int
+            Allows reproducibility.
+
+    top_k : None or int
+            If specified, we only sample from the top k most probable
+            characters. Otherwise all of them.
+
+    verbose : bool
+            Controls verbosity.
+
+    Returns
+    -------
+    text : str
+            Generated text of length `n_chars + len(initial_text)`.
+    """
+    res = initial_text or ""
+    h, c = None, None
+
+    iterable = range(n_chars)
+    if verbose:
+        iterable = tqdm.tqdm(iterable)
+
+    if random_state is not None:
+        np.random.seed(random_state)
+
+    for _ in iterable:
+        previous_char = res[-1] if res else None
+        new_ch, h, c = sample_char_with_state(
+            network,
+            vocabulary,
+            h=h,
+            c=c,
+            previous_char=previous_char,
+            top_k=top_k,
+        )
+        res += new_ch
 
     return res
 
@@ -331,31 +463,51 @@ class SingleCharacterLSTM(pl.LightningModule):
 
         self.activation_layer = torch.nn.Softmax(dim=1)
 
-    def forward(self, x):
+    def forward(self, x, h=None, c=None):
         """Perform forward pass.
 
         Parameters
         ----------
         x : torch.Tensor
-                Input features of shape `(batch_size, window_size, vocab_size)`.
-                Note that the provided `vocab_size` needs to be equal to the one
-                provided in the constructor. The remaining dimensions
-                (`batch_size` and `window_size`) can be any positive integers.
+            Input features of shape `(batch_size, window_size, vocab_size)`.
+            Note that the provided `vocab_size` needs to be equal to the one
+            provided in the constructor. The remaining dimensions
+            (`batch_size` and `window_size`) can be any positive integers.
+
+        h, c : torch.Tensor
+            Hidden states of shape `(n_layers, batch_size, hidden_size)`. Note
+            that if provided we enter a continuation mode. In this case
+            to generate the prediction we just use the last character and the
+            hidden state for the prediction. Note that in this case
+            we enforce that `x.shape=(batch_size, 1, vocab_size)`.
 
         Returns
         -------
         probs : torch.Tensor
-                Tensor of shape `(batch_size, vocab_size)`. For each sample
-                it represents the probability distribution over all characters
-                in the vocabulary.
+            Tensor of shape `(batch_size, vocab_size)`. For each sample
+            it represents the probability distribution over all characters
+            in the vocabulary.
+
+        h_n, c_n : torch.Tensor
+            New Hidden states of shape `(n_layers, batch_size, hidden_size)`.
         """
-        _, (h_n, _) = self.rnn_layer(x)
+        continuation_mode = h is not None and c is not None
+
+        if continuation_mode:
+            if not (x.ndim == 3 and x.shape[1] == 1):
+                raise ValueError("Wrong input for the continuation mode")
+
+            _, (h_n, c_n) = self.rnn_layer(x, (h, c))
+
+        else:
+            _, (h_n, c_n) = self.rnn_layer(x)
+
         average_h_n = h_n.mean(dim=0)
         x = self.linear_layer1(average_h_n)
         logits = self.linear_layer2(x)
         probs = self.activation_layer(logits)
 
-        return probs
+        return probs, h_n, c_n
 
     def training_step(self, batch, batch_idx):
         """Implement training step.
@@ -378,7 +530,7 @@ class SingleCharacterLSTM(pl.LightningModule):
         """
         x, y = batch
         x, y = x.to(torch.float32), y.to(torch.float32)
-        probs = self.forward(x)
+        probs, _, _ = self.forward(x)
         loss = torch.nn.functional.binary_cross_entropy(probs, y)
 
         result = pl.TrainResult(minimize=loss)
@@ -389,7 +541,7 @@ class SingleCharacterLSTM(pl.LightningModule):
     def validation_step(self, batch, batch_idx):
         x, y = batch
         x, y = x.to(torch.float32), y.to(torch.float32)
-        probs = self.forward(x)
+        probs, _, _ = self.forward(x)
         loss = torch.nn.functional.binary_cross_entropy(probs, y)
 
         result = pl.EvalResult()
