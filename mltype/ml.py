@@ -622,20 +622,23 @@ def run_train(
         fill_strategy=fill_strategy,
     )
 
-    splix_ix = int(len(X) * train_test_split)
+    split_ix = int(len(X) * train_test_split)
+    indices = np.random.permutation(len(X))
+    train_indices = indices[:split_ix]
+    val_indices = indices[split_ix:]
 
     dataset = LanguageDataset(X, y, vocabulary=vocabulary)
 
     dataloader_t = torch.utils.data.DataLoader(
         dataset,
         batch_size=batch_size,
-        sampler=torch.utils.data.SubsetRandomSampler(np.arange(splix_ix)),
+        sampler=torch.utils.data.SubsetRandomSampler(train_indices),
     )
 
     dataloader_v = torch.utils.data.DataLoader(
         dataset,
         batch_size=batch_size,
-        sampler=torch.utils.data.SubsetRandomSampler(np.arange(splix_ix, len(X))),
+        sampler=torch.utils.data.SubsetRandomSampler(val_indices),
     )
 
     network = SingleCharacterLSTM(
