@@ -629,13 +629,13 @@ def run_train(
     dataloader_t = torch.utils.data.DataLoader(
         dataset,
         batch_size=batch_size,
-        sampler=torch.utils.data.DataLoader(np.arange(splix_ix)),
+        sampler=torch.utils.data.SubsetRandomSampler(np.arange(splix_ix)),
     )
 
     dataloader_v = torch.utils.data.DataLoader(
         dataset,
         batch_size=batch_size,
-        sampler=torch.utils.data.DataLoader(np.arange(splix_ix, len(X))),
+        sampler=torch.utils.data.SubsetRandomSampler(np.arange(splix_ix, len(X))),
     )
 
     network = SingleCharacterLSTM(
