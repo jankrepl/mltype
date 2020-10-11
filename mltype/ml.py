@@ -1,6 +1,8 @@
 """Machine learning utilities."""
 from collections import Counter, defaultdict
+from datetime import datetime
 import importlib
+import pathlib
 
 import numpy as np
 import pytorch_lightning as pl
@@ -300,6 +302,7 @@ def sample_text(
             Generated text of length `n_chars + len(initial_text)`.
     """
     res = initial_text or ""
+    network.eval()
 
     iterable = range(n_chars)
     if verbose:
@@ -359,6 +362,7 @@ def sample_text_no_window(
     text : str
             Generated text of length `n_chars + len(initial_text)`.
     """
+    network.eval()
     res = initial_text or ""
     h, c = None, None
 
@@ -391,7 +395,7 @@ class LanguageDataset(torch.utils.data.Dataset):
         self.X = X
         self.y = y
         self.indices = indices
-        self.vocubulary = vocabulary
+        self.vocabulary = vocabulary
         self.transform = transform
 
     def __len__(self):
@@ -404,7 +408,8 @@ class LanguageDataset(torch.utils.data.Dataset):
         if self.transform is not None:
             X_sample, y_sample = self.transform(X_sample, y_sample)
 
-        return X_sample, y_sample
+        # unfortunatelly vocab will get collated to a batch, but whatever
+        return X_sample, y_sample, self.vocabulary
 
 
 class SingleCharacterLSTM(pl.LightningModule):
@@ -528,7 +533,7 @@ class SingleCharacterLSTM(pl.LightningModule):
         loss : torch.Tensor
                 Tensor of shape `(batch_size)` representing a per sample loss.
         """
-        x, y = batch
+        x, y, _ = batch
         x, y = x.to(torch.float32), y.to(torch.float32)
         probs, _, _ = self.forward(x)
         loss = torch.nn.functional.binary_cross_entropy(probs, y)
@@ -539,15 +544,40 @@ class SingleCharacterLSTM(pl.LightningModule):
         return result
 
     def validation_step(self, batch, batch_idx):
-        x, y = batch
+        x, y, vocabulary = batch
         x, y = x.to(torch.float32), y.to(torch.float32)
         probs, _, _ = self.forward(x)
         loss = torch.nn.functional.binary_cross_entropy(probs, y)
 
-        result = pl.EvalResult()
-        result.log("val_loss", loss, prog_bar=False)
+        #result = pl.EvalResult()
+        #result.log("val_loss", loss, prog_bar=False)
+        #result.log("vocabulary", vocabulary, prog_bar=False)
+        #return result
 
-        return result
+        result = {"val_loss": loss}
+
+        self.log_dict(result)
+
+        return vocabulary
+
+    def validation_epoch_end(self, outputs):
+        if self.logger is None:
+            return
+
+        mlflow_client = self.logger.experiment
+        run_id = self.logger.run_id
+        artifacts_uri = mlflow_client.get_run(run_id).info.artifact_uri
+        artifacts_path = pathlib.Path(artifacts_uri.partition("file:")[2])
+        output_path = artifacts_path / f"{datetime.now()}.txt"
+
+        vocabulary = np.array(outputs[-1])[:, 0]
+
+        n_samples = 5
+        n_chars = 100
+
+        lines = [sample_text_no_window(n_chars, self, vocabulary) for _ in range(n_samples)]
+        text = "\n".join(lines)
+        output_path.write_text(text)
 
     def configure_optimizers(self):
         """Configure optimizers.
@@ -571,6 +601,7 @@ def run_train(
     hidden_size=32,
     dense_size=32,
     n_layers=1,
+    use_mlflow=True
 ):
     output_path = get_cache_dir() / "languages" / name
 
@@ -592,7 +623,7 @@ def run_train(
 
     splix_ix = int(len(X) * train_test_split)
 
-    dataset = LanguageDataset(X, y)
+    dataset = LanguageDataset(X, y, vocabulary=vocabulary)
 
     dataloader_t = torch.utils.data.DataLoader(
         dataset,
@@ -613,18 +644,21 @@ def run_train(
         n_layers=n_layers,
     )
 
-    logger = pl.loggers.MLFlowLogger(
-        "mltype", save_dir=get_cache_dir() / "logs" / "mlruns"
-    )
-    logger.log_hyperparams(
-        {
-            "fill_strategy": fill_strategy,
-            "model_name": name,
-            "train_test_split": train_test_split,
-            "vocab_size": vocab_size,
-            "window_size": window_size,
-        }
-    )
+    if use_mlflow:
+        logger = pl.loggers.MLFlowLogger(
+            "mltype", save_dir=get_cache_dir() / "logs" / "mlruns"
+        )
+        logger.log_hyperparams(
+            {
+                "fill_strategy": fill_strategy,
+                "model_name": name,
+                "train_test_split": train_test_split,
+                "vocab_size": vocab_size,
+                "window_size": window_size,
+            }
+        )
+    else:
+        logger = None
 
     trainer = pl.Trainer(
         max_epochs=max_epochs,

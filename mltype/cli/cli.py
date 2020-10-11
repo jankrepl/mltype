@@ -185,6 +185,13 @@ def list():
     show_default=True,
 )
 @click.option(
+    "-m",
+    "--use-mlflow",
+    is_flag=True,
+    help="Use MLFlow for logging",
+    show_default=True,
+)
+@click.option(
     "-n",
     "--max-epochs",
     type=int,
@@ -227,6 +234,7 @@ def train(
     max_epochs,
     n_layers,
     train_test_split,
+    use_mlflow,
     vocab_size,
     window_size,
 ):
@@ -261,6 +269,7 @@ def train(
         hidden_size=hidden_size,
         dense_size=dense_size,
         n_layers=n_layers,
+        use_mlflow=use_mlflow
     )
     print(len(text))
     print("Done")
