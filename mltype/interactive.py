@@ -9,26 +9,45 @@ from mltype.base import STATUS_BACKSPACE, STATUS_CORRECT, STATUS_WRONG
 
 
 class Cursor:
+    """Utility class that can locate and modify the position of a cursor."""
     def __init__(self, stdscr):
         self.stdscr = stdscr
 
     @property
     def pos(self):
+        """Current position (x, y) of the cursors."""
         return self.stdscr.getyx()
 
     def get_char(self):
+        """Get the character the cursor is standing on."""
         y, x = self.pos
         return chr(self.stdscr.inch(y, x) & 0xFF)
 
     def move_abs(self, y, x):
-        """Move absolutely to cooordinates."""
+        """Move absolutely to cooordinates.
+
+        Note that if the column coordinate x is out of the
+        screen then we automatically move to differnt row.
+
+        Paramaters
+        ----------
+        y, x : int
+            New coordinates where to move the cursor to.
+
+        """
         max_y, max_x = self.stdscr.getmaxyx()
         delta_y, new_x = divmod(x, max_x)
         new_y = max(y + delta_y, 0)
         self.stdscr.move(new_y, new_x)
 
     def move_rel(self, delta_y, delta_x):
-        """Move relative to the current cursor."""
+        """Move relative to the current cursor.
+
+        Parameters
+        ----------
+        delta_y, delta_x : int
+            Relative shifts in a respective direction
+        """
         y, x = self.pos
         self.move_abs(y + delta_y, x + delta_x)
 
