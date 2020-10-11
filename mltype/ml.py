@@ -753,4 +753,7 @@ def save_model(model, vocabulary, path):
         "vocabulary": vocabulary,
     }
 
+    path_parent = pathlib.Path(path).parent
+    path_parent.mkdir(parents=True, exist_ok=True)
+
     torch.save(output_dict, path)
