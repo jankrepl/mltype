@@ -549,10 +549,10 @@ class SingleCharacterLSTM(pl.LightningModule):
         probs, _, _ = self.forward(x)
         loss = torch.nn.functional.binary_cross_entropy(probs, y)
 
-        #result = pl.EvalResult()
-        #result.log("val_loss", loss, prog_bar=False)
-        #result.log("vocabulary", vocabulary, prog_bar=False)
-        #return result
+        # result = pl.EvalResult()
+        # result.log("val_loss", loss, prog_bar=False)
+        # result.log("vocabulary", vocabulary, prog_bar=False)
+        # return result
 
         result = {"val_loss": loss}
 
@@ -575,7 +575,10 @@ class SingleCharacterLSTM(pl.LightningModule):
         n_samples = 5
         n_chars = 100
 
-        lines = [sample_text_no_window(n_chars, self, vocabulary) for _ in range(n_samples)]
+        lines = [
+            sample_text_no_window(n_chars, self, vocabulary)
+            for _ in range(n_samples)
+        ]
         text = "\n".join(lines)
         output_path.write_text(text)
 
@@ -602,7 +605,7 @@ def run_train(
     dense_size=32,
     n_layers=1,
     use_mlflow=True,
-    early_stopping=True
+    early_stopping=True,
 ):
     output_path = get_cache_dir() / "languages" / name
 

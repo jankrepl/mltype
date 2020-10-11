@@ -278,7 +278,7 @@ def train(
         dense_size=dense_size,
         n_layers=n_layers,
         use_mlflow=use_mlflow,
-        early_stopping=early_stopping
+        early_stopping=early_stopping,
     )
     print(len(text))
     print("Done")
