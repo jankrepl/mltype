@@ -169,6 +169,13 @@ def list():
     show_default=True,
 )
 @click.option(
+    "-g",
+    "--gpus",
+    type=int,
+    help="Number of gpus. If not specified, then none. If -1, then all.",
+    show_default=True,
+)
+@click.option(
     "-h",
     "--hidden-size",
     type=int,
@@ -235,6 +242,7 @@ def train(
     model_name,
     extensions,
     fill_strategy,
+    gpus,
     batch_size,
     dense_size,
     hidden_size,
@@ -279,6 +287,7 @@ def train(
         n_layers=n_layers,
         use_mlflow=use_mlflow,
         early_stopping=early_stopping,
+        gpus=gpus,
     )
     print(len(text))
     print("Done")

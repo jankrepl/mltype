@@ -609,6 +609,7 @@ def run_train(
     n_layers=1,
     use_mlflow=True,
     early_stopping=True,
+    gpus=None,
 ):
     output_path = get_cache_dir() / "languages" / name
 
@@ -681,6 +682,7 @@ def run_train(
         callback = None
 
     trainer = pl.Trainer(
+        gpus=gpus,
         max_epochs=max_epochs,
         logger=logger,
         early_stop_callback=callback,
