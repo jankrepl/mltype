@@ -609,6 +609,7 @@ def run_train(
     n_layers=1,
     use_mlflow=True,
     early_stopping=True,
+    gpus=None,
 ):
     output_path = get_cache_dir() / "languages" / name
 
@@ -681,6 +682,7 @@ def run_train(
         callback = None
 
     trainer = pl.Trainer(
+        gpus=gpus,
         max_epochs=max_epochs,
         logger=logger,
         early_stop_callback=callback,
@@ -750,5 +752,8 @@ def save_model(model, vocabulary, path):
         "state_dict": model.state_dict(),
         "vocabulary": vocabulary,
     }
+
+    path_parent = pathlib.Path(path).parent
+    path_parent.mkdir(parents=True, exist_ok=True)
 
     torch.save(output_dict, path)
