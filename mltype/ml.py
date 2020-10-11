@@ -3,6 +3,7 @@ from collections import Counter, defaultdict
 from datetime import datetime
 import importlib
 import pathlib
+import warnings
 
 import numpy as np
 import pytorch_lightning as pl
@@ -10,6 +11,8 @@ import torch
 import tqdm
 
 from mltype.utils import get_cache_dir
+
+warnings.filterwarnings("ignore")
 
 
 def create_data_language(
@@ -629,6 +632,9 @@ def run_train(
     indices = np.random.permutation(len(X))
     train_indices = indices[:split_ix]
     val_indices = indices[split_ix:]
+    print(
+        f"Train set: {len(train_indices)}\nValidation set: {len(val_indices)}"
+    )
 
     dataset = LanguageDataset(X, y, vocabulary=vocabulary)
 
@@ -652,6 +658,7 @@ def run_train(
     )
 
     if use_mlflow:
+        print("Logging with MLflow")
         logger = pl.loggers.MLFlowLogger(
             "mltype", save_dir=get_cache_dir() / "logs" / "mlruns"
         )
@@ -668,9 +675,11 @@ def run_train(
         logger = None
 
     if early_stopping:
-        callback = pl.callbacks.EarlyStopping(monitor="val_loss")
+        print("Activating early stopping")
+        callback = pl.callbacks.EarlyStopping(monitor="val_loss", verbose=True)
     else:
         callback = None
+
     trainer = pl.Trainer(
         max_epochs=max_epochs,
         logger=logger,
