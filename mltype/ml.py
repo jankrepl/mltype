@@ -601,7 +601,8 @@ def run_train(
     hidden_size=32,
     dense_size=32,
     n_layers=1,
-    use_mlflow=True
+    use_mlflow=True,
+    early_stopping=True
 ):
     output_path = get_cache_dir() / "languages" / name
 
@@ -660,10 +661,14 @@ def run_train(
     else:
         logger = None
 
+    if early_stopping:
+        callback = pl.callbacks.EarlyStopping(monitor="val_loss")
+    else:
+        callback = None
     trainer = pl.Trainer(
         max_epochs=max_epochs,
         logger=logger,
-        early_stop_callback=pl.callbacks.EarlyStopping(monitor="val_loss"),
+        early_stop_callback=callback,
     )
     trainer.fit(network, dataloader_t, dataloader_v)
 

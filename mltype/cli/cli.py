@@ -200,6 +200,13 @@ def list():
     show_default=True,
 )
 @click.option(
+    "-s",
+    "--early-stopping",
+    is_flag=True,
+    help="Enable early stopping based on validation loss",
+    show_default=True,
+)
+@click.option(
     "-t",
     "--train-test-split",
     type=float,
@@ -232,6 +239,7 @@ def train(
     dense_size,
     hidden_size,
     max_epochs,
+    early_stopping,
     n_layers,
     train_test_split,
     use_mlflow,
@@ -269,7 +277,8 @@ def train(
         hidden_size=hidden_size,
         dense_size=dense_size,
         n_layers=n_layers,
-        use_mlflow=use_mlflow
+        use_mlflow=use_mlflow,
+        early_stopping=early_stopping
     )
     print(len(text))
     print("Done")
