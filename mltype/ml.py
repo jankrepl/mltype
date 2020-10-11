@@ -1,6 +1,9 @@
 """Machine learning utilities."""
 from collections import Counter, defaultdict
+from datetime import datetime
 import importlib
+import pathlib
+import warnings
 
 import numpy as np
 import pytorch_lightning as pl
@@ -8,6 +11,8 @@ import torch
 import tqdm
 
 from mltype.utils import get_cache_dir
+
+warnings.filterwarnings("ignore")
 
 
 def create_data_language(
@@ -300,6 +305,7 @@ def sample_text(
             Generated text of length `n_chars + len(initial_text)`.
     """
     res = initial_text or ""
+    network.eval()
 
     iterable = range(n_chars)
     if verbose:
@@ -359,6 +365,7 @@ def sample_text_no_window(
     text : str
             Generated text of length `n_chars + len(initial_text)`.
     """
+    network.eval()
     res = initial_text or ""
     h, c = None, None
 
@@ -391,7 +398,7 @@ class LanguageDataset(torch.utils.data.Dataset):
         self.X = X
         self.y = y
         self.indices = indices
-        self.vocubulary = vocabulary
+        self.vocabulary = vocabulary
         self.transform = transform
 
     def __len__(self):
@@ -404,7 +411,8 @@ class LanguageDataset(torch.utils.data.Dataset):
         if self.transform is not None:
             X_sample, y_sample = self.transform(X_sample, y_sample)
 
-        return X_sample, y_sample
+        # unfortunatelly vocab will get collated to a batch, but whatever
+        return X_sample, y_sample, self.vocabulary
 
 
 class SingleCharacterLSTM(pl.LightningModule):
@@ -528,7 +536,7 @@ class SingleCharacterLSTM(pl.LightningModule):
         loss : torch.Tensor
                 Tensor of shape `(batch_size)` representing a per sample loss.
         """
-        x, y = batch
+        x, y, _ = batch
         x, y = x.to(torch.float32), y.to(torch.float32)
         probs, _, _ = self.forward(x)
         loss = torch.nn.functional.binary_cross_entropy(probs, y)
@@ -539,15 +547,43 @@ class SingleCharacterLSTM(pl.LightningModule):
         return result
 
     def validation_step(self, batch, batch_idx):
-        x, y = batch
+        x, y, vocabulary = batch
         x, y = x.to(torch.float32), y.to(torch.float32)
         probs, _, _ = self.forward(x)
         loss = torch.nn.functional.binary_cross_entropy(probs, y)
 
-        result = pl.EvalResult()
-        result.log("val_loss", loss, prog_bar=False)
+        # result = pl.EvalResult()
+        # result.log("val_loss", loss, prog_bar=False)
+        # result.log("vocabulary", vocabulary, prog_bar=False)
+        # return result
 
-        return result
+        result = {"val_loss": loss}
+
+        self.log_dict(result)
+
+        return vocabulary
+
+    def validation_epoch_end(self, outputs):
+        if self.logger is None:
+            return
+
+        mlflow_client = self.logger.experiment
+        run_id = self.logger.run_id
+        artifacts_uri = mlflow_client.get_run(run_id).info.artifact_uri
+        artifacts_path = pathlib.Path(artifacts_uri.partition("file:")[2])
+        output_path = artifacts_path / f"{datetime.now()}.txt"
+
+        vocabulary = np.array(outputs[-1])[:, 0]
+
+        n_samples = 5
+        n_chars = 100
+
+        lines = [
+            sample_text_no_window(n_chars, self, vocabulary)
+            for _ in range(n_samples)
+        ]
+        text = "\n".join(lines)
+        output_path.write_text(text)
 
     def configure_optimizers(self):
         """Configure optimizers.
@@ -571,6 +607,8 @@ def run_train(
     hidden_size=32,
     dense_size=32,
     n_layers=1,
+    use_mlflow=True,
+    early_stopping=True,
 ):
     output_path = get_cache_dir() / "languages" / name
 
@@ -590,20 +628,26 @@ def run_train(
         fill_strategy=fill_strategy,
     )
 
-    splix_ix = int(len(X) * train_test_split)
+    split_ix = int(len(X) * train_test_split)
+    indices = np.random.permutation(len(X))
+    train_indices = indices[:split_ix]
+    val_indices = indices[split_ix:]
+    print(
+        f"Train set: {len(train_indices)}\nValidation set: {len(val_indices)}"
+    )
 
-    dataset = LanguageDataset(X, y)
+    dataset = LanguageDataset(X, y, vocabulary=vocabulary)
 
     dataloader_t = torch.utils.data.DataLoader(
         dataset,
         batch_size=batch_size,
-        sampler=torch.utils.data.DataLoader(np.arange(splix_ix)),
+        sampler=torch.utils.data.SubsetRandomSampler(train_indices),
     )
 
     dataloader_v = torch.utils.data.DataLoader(
         dataset,
         batch_size=batch_size,
-        sampler=torch.utils.data.DataLoader(np.arange(splix_ix, len(X))),
+        sampler=torch.utils.data.SubsetRandomSampler(val_indices),
     )
 
     network = SingleCharacterLSTM(
@@ -613,23 +657,33 @@ def run_train(
         n_layers=n_layers,
     )
 
-    logger = pl.loggers.MLFlowLogger(
-        "mltype", save_dir=get_cache_dir() / "logs" / "mlruns"
-    )
-    logger.log_hyperparams(
-        {
-            "fill_strategy": fill_strategy,
-            "model_name": name,
-            "train_test_split": train_test_split,
-            "vocab_size": vocab_size,
-            "window_size": window_size,
-        }
-    )
+    if use_mlflow:
+        print("Logging with MLflow")
+        logger = pl.loggers.MLFlowLogger(
+            "mltype", save_dir=get_cache_dir() / "logs" / "mlruns"
+        )
+        logger.log_hyperparams(
+            {
+                "fill_strategy": fill_strategy,
+                "model_name": name,
+                "train_test_split": train_test_split,
+                "vocab_size": vocab_size,
+                "window_size": window_size,
+            }
+        )
+    else:
+        logger = None
+
+    if early_stopping:
+        print("Activating early stopping")
+        callback = pl.callbacks.EarlyStopping(monitor="val_loss", verbose=True)
+    else:
+        callback = None
 
     trainer = pl.Trainer(
         max_epochs=max_epochs,
         logger=logger,
-        early_stop_callback=pl.callbacks.EarlyStopping(monitor="val_loss"),
+        early_stop_callback=callback,
     )
     trainer.fit(network, dataloader_t, dataloader_v)
 

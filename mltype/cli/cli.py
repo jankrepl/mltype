@@ -185,11 +185,25 @@ def list():
     show_default=True,
 )
 @click.option(
+    "-m",
+    "--use-mlflow",
+    is_flag=True,
+    help="Use MLFlow for logging",
+    show_default=True,
+)
+@click.option(
     "-n",
     "--max-epochs",
     type=int,
     default=10,
     help="Maximum number of epochs",
+    show_default=True,
+)
+@click.option(
+    "-s",
+    "--early-stopping",
+    is_flag=True,
+    help="Enable early stopping based on validation loss",
     show_default=True,
 )
 @click.option(
@@ -225,8 +239,10 @@ def train(
     dense_size,
     hidden_size,
     max_epochs,
+    early_stopping,
     n_layers,
     train_test_split,
+    use_mlflow,
     vocab_size,
     window_size,
 ):
@@ -261,6 +277,8 @@ def train(
         hidden_size=hidden_size,
         dense_size=dense_size,
         n_layers=n_layers,
+        use_mlflow=use_mlflow,
+        early_stopping=early_stopping,
     )
     print(len(text))
     print("Done")
