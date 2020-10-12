@@ -1,17 +1,19 @@
 """Data creating and managing."""
 
 
-def file2text(filepath, keep_new_lines=True):
+def file2text(filepath):
     """Read all lines of a file into a string.
+
+	Note that we destroy all the new line characters
+	and all the whitespace charecters on both ends
+	of the line. Note that this is very radical
+	for source code of programming languages or
+	similar.
 
     Parameters
     ----------
     filepath : pathlib.Path
         Path to the file
-
-    keep_new_lines : bool
-        If True, the final text might contain new_line
-        characters.
 
     Returns
     -------
@@ -19,13 +21,9 @@ def file2text(filepath, keep_new_lines=True):
         All the text found in the input file.
     """
     with filepath.open("r") as f:
-        text = f.read()
+        texts = [line.strip() for line in f.readlines()]
 
-        if not keep_new_lines:
-            text = text.replace('\n', '')
-
-        return text
-
+    return " ".join(texts)
 
 def folder2text(folderpath, valid_extensions=None):
     """Collect all files recursively and read into a string."""
