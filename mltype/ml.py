@@ -603,6 +603,7 @@ def run_train(
     batch_size=32,
     vocab_size=None,
     fill_strategy="skip",
+    illegal_chars="",
     train_test_split=0.5,
     hidden_size=32,
     dense_size=32,
@@ -611,15 +612,21 @@ def run_train(
     early_stopping=True,
     gpus=None,
 ):
+    illegal_chars = illegal_chars or ""
     output_path = get_cache_dir() / "languages" / name
 
     if output_path.exists():
         raise FileExistsError(f"The model {name} already exists")
 
     vocabulary = sorted(
-        [x[0] for x in Counter(text).most_common()][:vocab_size]
+        [
+            x[0]
+            for x in Counter(text).most_common()
+            if x[0] not in illegal_chars
+        ][:vocab_size]
     )  # works for None
     vocab_size = len(vocabulary)
+    print(f"Vocabulary:\n{vocabulary}")
 
     X, y, indices = create_data_language(
         text,
