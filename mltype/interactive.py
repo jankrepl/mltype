@@ -307,11 +307,11 @@ def main_basic(text, force_perfect, output_file, instant_death, target_wpm):
     if output_file is not None:
         tt.save(pathlib.Path(output_file))
 
-
     width, _ = shutil.get_terminal_size()
     print(" Statistics ".center(width, "="))
     print(f"Accuracy: {tt.compute_accuracy():.1f}\nWPM: {tt.compute_wpm():.1f}")
     print(width * "=")
+
 
 def main_replay(
     replay_file, force_perfect, overwrite, instant_death, target_wpm
