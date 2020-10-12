@@ -61,6 +61,12 @@ def cli():
     type=int,
     help="The desired speed to be shown as a guide",
 )
+@click.option(
+    "-w",
+    "--include-whitespace",
+    is_flag=True,
+    help="Include whitespace characters",
+)
 def file(
     path,
     start_line,
@@ -71,6 +77,7 @@ def file(
     instant_death,
     output_file,
     target_wpm,
+    include_whitespace,
 ):
     """Type text from a file"""
     import numpy as np
@@ -87,7 +94,10 @@ def file(
             "line or the n_lines to be randomly selected."
         )
 
-    all_lines = [line.strip() for line in path.readlines()]
+    all_lines = [line for line in path.readlines()]
+    if not include_whitespace:
+        all_lines = [f"{line.strip()} " for line in all_lines]
+
     n_all_lines = len(all_lines)
 
     if mode_exact:
@@ -111,7 +121,7 @@ def file(
 
     selected_lines = all_lines[start_line:end_line]
     main_basic(
-        " ".join(selected_lines),
+        "".join(selected_lines),
         force_perfect=force_perfect,
         output_file=output_file,
         instant_death=instant_death,
@@ -314,14 +324,27 @@ def train(
     help="Path to where to save the result file",
 )
 @click.option(
+    "-r",
+    "--raw-string",
+    is_flag=True,
+    help="If active, then newlines and tabs are not not special characters",
+)
+@click.option(
     "-t",
     "--target_wpm",
     type=int,
     help="The desired speed to be shown as a guide",
 )
-def raw(text, force_perfect, output_file, instant_death, target_wpm):
+def raw(
+    text, force_perfect, output_file, instant_death, target_wpm, raw_string
+):
     """Provide text manually"""
+    import codecs
+
     from mltype.interactive import main_basic
+
+    if not raw_string:
+        text = codecs.decode(text, "unicode_escape")
 
     main_basic(
         text,

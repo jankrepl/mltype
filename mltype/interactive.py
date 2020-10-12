@@ -9,26 +9,46 @@ from mltype.base import STATUS_BACKSPACE, STATUS_CORRECT, STATUS_WRONG
 
 
 class Cursor:
+    """Utility class that can locate and modify the position of a cursor."""
+
     def __init__(self, stdscr):
         self.stdscr = stdscr
 
     @property
     def pos(self):
+        """Current position (x, y) of the cursors."""
         return self.stdscr.getyx()
 
     def get_char(self):
+        """Get the character the cursor is standing on."""
         y, x = self.pos
         return chr(self.stdscr.inch(y, x) & 0xFF)
 
     def move_abs(self, y, x):
-        """Move absolutely to cooordinates."""
+        """Move absolutely to cooordinates.
+
+        Note that if the column coordinate x is out of the
+        screen then we automatically move to differnt row.
+
+        Paramaters
+        ----------
+        y, x : int
+            New coordinates where to move the cursor to.
+
+        """
         max_y, max_x = self.stdscr.getmaxyx()
         delta_y, new_x = divmod(x, max_x)
         new_y = max(y + delta_y, 0)
         self.stdscr.move(new_y, new_x)
 
     def move_rel(self, delta_y, delta_x):
-        """Move relative to the current cursor."""
+        """Move relative to the current cursor.
+
+        Parameters
+        ----------
+        delta_y, delta_x : int
+            Relative shifts in a respective direction
+        """
         y, x = self.pos
         self.move_abs(y + delta_y, x + delta_x)
 
@@ -66,6 +86,9 @@ class Pen:
 
     def addch(self, stdscr, y, x, text):
         stdscr.addch(y, x, text, curses.color_pair(self.i))
+
+    def addstr(self, stdscr, y, x, text):
+        stdscr.addstr(y, x, text, curses.color_pair(self.i))
 
     def _register(self):
         curses.init_pair(self.i, self.font, self.background)
@@ -162,8 +185,7 @@ class TypedTextWriter:
             raise ValueError("The replay was never started")
 
     def render(self):
-        # self.stdscr.clear()
-
+        """Render the entire screen."""
         i_start, _, width = self.screen_status
 
         if self.replay_tt is not None:
@@ -178,8 +200,10 @@ class TypedTextWriter:
             i_target = min(self.tt.n_characters - 1, int(i_target))
 
         # rended text
+        i_print = i_start
+        current_ix_print = i_start
         for i, (alist, ch) in enumerate(zip(self.tt.actions, self.tt.text)):
-            y, x = divmod(i_start + i, width)
+            y, x = divmod(i_print, width)
 
             if i == self.current_ix or not alist:
                 # character that we stand on needs to have backspace styling
@@ -197,10 +221,21 @@ class TypedTextWriter:
                     # Make sure the normal cursor is visible
                     status = "target"
 
-            self.pens[status].addch(self.stdscr, y, x, ch)
+            if i == self.current_ix:
+                current_ix_print = i_print
+
+            if ch == "\n":
+                i_print += width - (i_print % width)
+                self.pens[status].addch(self.stdscr, y, x, " ")
+            elif ch == "\t":
+                i_print += 4
+                self.pens[status].addstr(self.stdscr, y, x, 4 * " ")
+            else:
+                i_print += 1
+                self.pens[status].addch(self.stdscr, y, x, ch)
 
         # render cursor
-        self.cursor.move_abs(self.y_start, self.x_start + self.current_ix)
+        self.cursor.move_abs(self.y_start, self.x_start + current_ix_print)
 
         self.stdscr.refresh()
 
@@ -240,7 +275,18 @@ class TypedTextWriter:
 
     @property
     def screen_status(self):
-        """The starting position of our text."""
+        """The starting position of our text
+
+        Returns
+        -------
+        i_start : int
+            Integer representing the number of cells away from the start
+            we are.
+
+        height, width : int
+            Height, width of the screen. Note that user my resize during
+            a session.
+        """
         height, width = self.stdscr.getmaxyx()
         i_start = self.y_start * width + self.x_start
 
@@ -293,7 +339,7 @@ def main_basic(text, force_perfect, output_file, instant_death, target_wpm):
     target_wpm : int or None
         The desired speed to be displayed as a guide.
     """
-    text_stripped = text.strip()
+    text_stripped = text.rstrip()
 
     tt = curses.wrapper(
         run_loop,

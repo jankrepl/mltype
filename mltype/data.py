@@ -4,6 +4,12 @@
 def file2text(filepath):
     """Read all lines of a file into a string.
 
+        Note that we destroy all the new line characters
+        and all the whitespace charecters on both ends
+        of the line. Note that this is very radical
+        for source code of programming languages or
+        similar.
+
     Parameters
     ----------
     filepath : pathlib.Path
