@@ -11,7 +11,6 @@ from mltype.base import (
     STATUS_CORRECT,
     STATUS_WRONG,
     TypedText,
-    TypedText_,
 )
 
 
@@ -183,30 +182,3 @@ class TestTypedText:
 
         tt.save(path_file)
         assert tt == TypedText.load(path_file)
-
-
-class TestTypedText_:
-    def test_basis(self):
-        text = "Hello"
-
-        tt = TypedText_(text)
-
-        assert len(tt) == 5
-
-        assert tt.start_ts is None
-        assert tt.end_ts is None
-
-        tt.set_correct(0)
-
-        assert tt.start_ts is not None
-        tt.status[0] == 2  # 2 == STATUS_CORRECT
-
-    def test_timings(self):
-        text = "Hello"
-
-        tt = TypedText_(text)
-
-        assert len(tt) == 5
-
-        assert tt.compute_cpm() == 0
-        assert tt.compute_wpm() == 0
