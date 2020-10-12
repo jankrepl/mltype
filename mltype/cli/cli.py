@@ -61,6 +61,12 @@ def cli():
     type=int,
     help="The desired speed to be shown as a guide",
 )
+@click.option(
+    "-w",
+    "--include-whitespace",
+    is_flag=True,
+    help="Include whitespace characters",
+)
 def file(
     path,
     start_line,
@@ -71,6 +77,7 @@ def file(
     instant_death,
     output_file,
     target_wpm,
+    include_whitespace
 ):
     """Type text from a file"""
     import numpy as np
@@ -88,6 +95,9 @@ def file(
         )
 
     all_lines = [line for line in path.readlines()]
+    if not include_whitespace:
+        all_lines = [f"{line.strip()} " for line in all_lines]
+
     n_all_lines = len(all_lines)
 
     if mode_exact:
