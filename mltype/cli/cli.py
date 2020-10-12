@@ -314,14 +314,27 @@ def train(
     help="Path to where to save the result file",
 )
 @click.option(
+    "-r",
+    "--raw-string",
+    is_flag=True,
+    help="If active, then newlines and tabs are not not special characters",
+)
+@click.option(
     "-t",
     "--target_wpm",
     type=int,
     help="The desired speed to be shown as a guide",
 )
-def raw(text, force_perfect, output_file, instant_death, target_wpm):
+def raw(
+    text, force_perfect, output_file, instant_death, target_wpm, raw_string
+):
     """Provide text manually"""
+    import codecs
+
     from mltype.interactive import main_basic
+
+    if not raw_string:
+        text = codecs.decode(text, "unicode_escape")
 
     main_basic(
         text,
