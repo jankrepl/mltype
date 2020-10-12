@@ -87,7 +87,7 @@ def file(
             "line or the n_lines to be randomly selected."
         )
 
-    all_lines = [line.strip() for line in path.readlines()]
+    all_lines = [line for line in path.readlines()]
     n_all_lines = len(all_lines)
 
     if mode_exact:
@@ -111,7 +111,7 @@ def file(
 
     selected_lines = all_lines[start_line:end_line]
     main_basic(
-        " ".join(selected_lines),
+        "".join(selected_lines),
         force_perfect=force_perfect,
         output_file=output_file,
         instant_death=instant_death,

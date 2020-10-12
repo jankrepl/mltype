@@ -339,7 +339,7 @@ def main_basic(text, force_perfect, output_file, instant_death, target_wpm):
     target_wpm : int or None
         The desired speed to be displayed as a guide.
     """
-    text_stripped = text.strip()
+    text_stripped = text.rstrip()
 
     tt = curses.wrapper(
         run_loop,

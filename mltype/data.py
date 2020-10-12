@@ -1,7 +1,7 @@
 """Data creating and managing."""
 
 
-def file2text(filepath):
+def file2text(filepath, keep_new_lines=True):
     """Read all lines of a file into a string.
 
     Parameters
@@ -9,15 +9,22 @@ def file2text(filepath):
     filepath : pathlib.Path
         Path to the file
 
+    keep_new_lines : bool
+        If True, the final text might contain new_line
+        characters.
+
     Returns
     -------
     text : str
         All the text found in the input file.
     """
     with filepath.open("r") as f:
-        texts = [line.strip() for line in f.readlines()]
+        text = f.read()
 
-    return " ".join(texts)
+        if not keep_new_lines:
+            text = text.replace('\n', '')
+
+        return text
 
 
 def folder2text(folderpath, valid_extensions=None):
