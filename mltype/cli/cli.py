@@ -194,6 +194,13 @@ def list():
     show_default=True,
 )
 @click.option(
+    "-i",
+    "--illegal-chars",
+    type=str,
+    help="Characters to exclude from the vocabulary.",
+    show_default=True,
+)
+@click.option(
     "-l",
     "--n-layers",
     type=int,
@@ -252,6 +259,7 @@ def train(
     model_name,
     extensions,
     fill_strategy,
+    illegal_chars,
     gpus,
     batch_size,
     dense_size,
@@ -291,6 +299,7 @@ def train(
         batch_size=batch_size,
         vocab_size=vocab_size,
         fill_strategy=fill_strategy,
+        illegal_chars=illegal_chars,
         train_test_split=train_test_split,
         hidden_size=hidden_size,
         dense_size=dense_size,
