@@ -14,4 +14,4 @@ def test_strip(monkeypatch):
     fake_text = MagicMock(spec=str)
 
     main_basic(fake_text, None, None, None, None)
-    fake_text.strip.assert_called_once()
+    fake_text.rstrip.assert_called_once()
