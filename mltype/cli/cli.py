@@ -77,7 +77,7 @@ def file(
     instant_death,
     output_file,
     target_wpm,
-    include_whitespace
+    include_whitespace,
 ):
     """Type text from a file"""
     import numpy as np

@@ -4,11 +4,11 @@
 def file2text(filepath):
     """Read all lines of a file into a string.
 
-	Note that we destroy all the new line characters
-	and all the whitespace charecters on both ends
-	of the line. Note that this is very radical
-	for source code of programming languages or
-	similar.
+        Note that we destroy all the new line characters
+        and all the whitespace charecters on both ends
+        of the line. Note that this is very radical
+        for source code of programming languages or
+        similar.
 
     Parameters
     ----------
@@ -24,6 +24,7 @@ def file2text(filepath):
         texts = [line.strip() for line in f.readlines()]
 
     return " ".join(texts)
+
 
 def folder2text(folderpath, valid_extensions=None):
     """Collect all files recursively and read into a string."""
