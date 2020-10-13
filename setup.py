@@ -33,7 +33,7 @@ setup(
             "pytest-coverage",
             "tox",
         ],
-        "mlflow": ["mlflow"],
+        "mlflow": ["mlflow<=1.10.0"],
     },
     entry_points={
         "console_scripts": [

@@ -2,10 +2,10 @@
 import bisect
 import curses
 import pathlib
-import shutil
 
 from mltype.base import TypedText
 from mltype.base import STATUS_BACKSPACE, STATUS_CORRECT, STATUS_WRONG
+from mltype.utils import print_section
 
 
 class Cursor:
@@ -353,10 +353,11 @@ def main_basic(text, force_perfect, output_file, instant_death, target_wpm):
     if output_file is not None:
         tt.save(pathlib.Path(output_file))
 
-    width, _ = shutil.get_terminal_size()
-    print(" Statistics ".center(width, "="))
-    print(f"Accuracy: {tt.compute_accuracy():.1f}\nWPM: {tt.compute_wpm():.1f}")
-    print(width * "=")
+    with print_section(" Statistics ", fill_char="=", add_ts=False):
+        print(
+            f"Accuracy: {tt.compute_accuracy():.1f}\n"
+            f"WPM: {tt.compute_wpm():.1f}"
+        )
 
 
 def main_replay(
@@ -402,15 +403,13 @@ def main_replay(
     wpm_replay = replay_tt.compute_wpm()
     wpm_new = tt.compute_wpm()
 
-    width, _ = shutil.get_terminal_size()
-    print(" Statistics ".center(width, "="))
-    print(f"Old WPM: {wpm_replay:.1f}\nNew WPM: {wpm_new:.1f}")
+    with print_section(" Statistics ", fill_char="=", add_ts=False):
+        print(f"Old WPM: {wpm_replay:.1f}\nNew WPM: {wpm_new:.1f}")
 
-    if wpm_new > wpm_replay:
-        print("Congratulations!")
-        if overwrite:
-            print("Updating the checkpoint file")
-            tt.save(replay_file)
-    else:
-        print("You lost!")
-    print(width * "=")
+        if wpm_new > wpm_replay:
+            print("Congratulations!")
+            if overwrite:
+                print("Updating the checkpoint file")
+                tt.save(replay_file)
+        else:
+            print("You lost!")

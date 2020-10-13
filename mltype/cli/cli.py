@@ -1,5 +1,6 @@
 """Command line interface."""
 import pathlib
+import pprint
 import warnings
 
 import click
@@ -145,7 +146,7 @@ def list():
 
 
 @cli.command()
-@click.argument("path", type=click.Path())
+@click.argument("path", nargs=-1, type=click.Path())
 @click.argument("model_name", type=click.Path())
 @click.option(
     "-b",
@@ -273,26 +274,36 @@ def train(
     window_size,
 ):
     """Train a language"""
+    params = locals()
     from mltype.data import file2text, folder2text
     from mltype.ml import run_train
+    from mltype.utils import print_section
 
-    path_p = pathlib.Path(str(path))
+    with print_section(" Parameters ", drop_end=True):
+        pprint.pprint(params)
 
-    if not path_p.exists():
-        raise ValueError("The provided path does not exist")
+    all_texts = []
+    with print_section(" Reading file(s) ", drop_end=True):
+        for p in path:
+            path_p = pathlib.Path(str(p))
 
-    if path_p.is_file():
-        text = file2text(path_p)
-    elif path_p.is_dir():
-        valid_extensions = (
-            extensions.split(",") if extensions is not None else None
-        )
-        text = folder2text(path_p, valid_extensions=valid_extensions)
-    else:
-        ValueError("Unrecoggnized object")
+            if not path_p.exists():
+                raise ValueError("The provided path does not exist")
+
+            if path_p.is_file():
+                texts = [file2text(path_p)]
+            elif path_p.is_dir():
+                valid_extensions = (
+                    extensions.split(",") if extensions is not None else None
+                )
+                texts = folder2text(path_p, valid_extensions=valid_extensions)
+            else:
+                ValueError("Unrecognized object")
+
+            all_texts.extend(texts)
 
     run_train(
-        text,
+        all_texts,
         model_name,
         max_epochs=max_epochs,
         window_size=window_size,
@@ -308,7 +319,6 @@ def train(
         early_stopping=early_stopping,
         gpus=gpus,
     )
-    print(len(text))
     print("Done")
 
 

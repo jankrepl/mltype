@@ -1,7 +1,7 @@
 """Data creating and managing."""
 
 
-def file2text(filepath):
+def file2text(filepath, verbose=True):
     """Read all lines of a file into a string.
 
         Note that we destroy all the new line characters
@@ -15,6 +15,9 @@ def file2text(filepath):
     filepath : pathlib.Path
         Path to the file
 
+    verbose : bool
+        If True, we print the name of the file.
+
     Returns
     -------
     text : str
@@ -23,11 +26,14 @@ def file2text(filepath):
     with filepath.open("r") as f:
         texts = [line.strip() for line in f.readlines()]
 
+    if verbose:
+        print(filepath.name)
+
     return " ".join(texts)
 
 
 def folder2text(folderpath, valid_extensions=None):
-    """Collect all files recursively and read into a string."""
+    """Collect all files recursively and read into a list of strings."""
     texts = []
 
     for p in folderpath.rglob("*"):
@@ -40,6 +46,5 @@ def folder2text(folderpath, valid_extensions=None):
             texts.append(file2text(p))
         except UnicodeDecodeError:
             continue
-        print(p.name)
 
-    return " ".join(texts)
+    return texts
