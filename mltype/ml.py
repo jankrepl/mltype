@@ -99,8 +99,8 @@ def create_data_language(
         indices_lines.append(i)
 
     if not X_lines:
-        X = np.empty((0, window_size, vocab_size))
-        y = np.empty((0, vocab_size))
+        X = np.empty((0, window_size, vocab_size), dtype=bool)
+        y = np.empty((0, vocab_size), dtype=bool)
 
     else:
         X = np.array(X_lines)
@@ -536,6 +536,8 @@ def run_train(
             y_list.append(y_)
         X = np.concatenate(X_list, axis=0) if len(X_list) != 1 else X_list[0]
         y = np.concatenate(y_list, axis=0) if len(y_list) != 1 else y_list[0]
+
+        print(f"X.dtype={X.dtype}, y.dtype={y.dtype}")
 
         split_ix = int(len(X) * train_test_split)
         indices = np.random.permutation(len(X))
