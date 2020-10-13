@@ -656,9 +656,7 @@ def run_train(
         indices = np.random.permutation(len(X))
         train_indices = indices[:split_ix]
         val_indices = indices[split_ix:]
-        print(
-            f"Train: {len(train_indices)}\nValidation: {len(val_indices)}"
-        )
+        print(f"Train: {len(train_indices)}\nValidation: {len(val_indices)}")
 
     dataset = LanguageDataset(X, y, vocabulary=vocabulary)
 
