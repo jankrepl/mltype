@@ -2,6 +2,7 @@
 import pathlib
 import pprint
 import warnings
+import sys
 
 import click
 
@@ -479,6 +480,7 @@ def sample(
     top_k,
 ):
     """Sample text from a language"""
+    sys.modules["mlflow"] = None
     from mltype.interactive import main_basic
     from mltype.ml import load_model, sample_text_no_window
     from mltype.utils import get_cache_dir
