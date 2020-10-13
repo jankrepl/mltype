@@ -583,16 +583,18 @@ def run_train(
 
     if early_stopping:
         print("Activating early stopping")
-        callback = pl.callbacks.EarlyStopping(monitor="val_loss", verbose=True)
+        callbacks = [
+            pl.callbacks.EarlyStopping(monitor="val_loss", verbose=True)
+        ]
     else:
-        callback = None
+        callbacks = []
 
     with print_section(" Training ", drop_end=True):
         trainer = pl.Trainer(
             gpus=gpus,
             max_epochs=max_epochs,
             logger=logger,
-            early_stop_callback=callback,
+            callbacks=callbacks,
         )
         trainer.fit(network, dataloader_t, dataloader_v)
 
