@@ -657,7 +657,7 @@ def run_train(
         train_indices = indices[:split_ix]
         val_indices = indices[split_ix:]
         print(
-            f"Train set: {len(train_indices)}\nValidation set: {len(val_indices)}"
+            f"Train: {len(train_indices)}\nValidation: {len(val_indices)}"
         )
 
     dataset = LanguageDataset(X, y, vocabulary=vocabulary)
