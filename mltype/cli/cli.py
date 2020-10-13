@@ -482,13 +482,13 @@ def sample(
     """Sample text from a language"""
     sys.modules["mlflow"] = None
     from mltype.interactive import main_basic
-    from mltype.ml import load_model, sample_text_no_window
+    from mltype.ml import load_model, sample_text
     from mltype.utils import get_cache_dir
 
     model_folder = get_cache_dir() / "languages" / model_name
 
     network, vocabulary = load_model(model_folder)
-    text = sample_text_no_window(
+    text = sample_text(
         n_chars,
         network,
         vocabulary,
