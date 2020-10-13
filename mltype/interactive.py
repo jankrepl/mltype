@@ -355,7 +355,9 @@ def main_basic(text, force_perfect, output_file, instant_death, target_wpm):
         tt.save(pathlib.Path(output_file))
 
     with print_section(" Statistics ", fill_char="=", add_ts=False):
-        print(f"Accuracy: {tt.compute_accuracy():.1f}\nWPM: {tt.compute_wpm():.1f}")
+        print(
+            f"Accuracy: {tt.compute_accuracy():.1f}\nWPM: {tt.compute_wpm():.1f}"
+        )
 
 
 def main_replay(

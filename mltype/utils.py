@@ -34,6 +34,7 @@ def get_cache_dir(predefined_path=None):
 
     return path
 
+
 @contextmanager
 def print_section(name, fill_char="=", drop_end=False, add_ts=True):
     """Print nice section blocks.
