@@ -10,7 +10,7 @@ import pytorch_lightning as pl
 import torch
 import tqdm
 
-from mltype.utils import get_cache_dir
+from mltype.utils import get_cache_dir, print_section
 
 warnings.filterwarnings("ignore")
 
@@ -98,8 +98,14 @@ def create_data_language(
         y_lines.append(ohv_matrix[target_ix].copy())
         indices_lines.append(i)
 
-    X = np.array(X_lines)
-    y = np.array(y_lines)
+    if not X_lines:
+        X = np.empty((0, window_size, vocab_size))
+        y = np.empty((0, vocab_size))
+
+    else:
+        X = np.array(X_lines)
+        y = np.array(y_lines)
+
     indices = np.array(indices_lines)
 
     return X, y, indices
@@ -596,7 +602,7 @@ class SingleCharacterLSTM(pl.LightningModule):
 
 
 def run_train(
-    text,
+    texts,
     name,
     max_epochs=10,
     window_size=50,
@@ -618,31 +624,41 @@ def run_train(
     if output_path.exists():
         raise FileExistsError(f"The model {name} already exists")
 
-    vocabulary = sorted(
-        [
-            x[0]
-            for x in Counter(text).most_common()
-            if x[0] not in illegal_chars
-        ][:vocab_size]
-    )  # works for None
-    vocab_size = len(vocabulary)
-    print(f"Vocabulary:\n{vocabulary}")
+    with print_section(" Computing vocabulary ", drop_end=True):
+        vocabulary = sorted(
+            [
+                x[0]
+                for x in Counter("".join(texts)).most_common()
+                if x[0] not in illegal_chars
+            ][:vocab_size]
+        )  # works for None
+        vocab_size = len(vocabulary)
+        print(f"# characters: {vocab_size}")
+        print(vocabulary)
 
-    X, y, indices = create_data_language(
-        text,
-        vocabulary,
-        window_size=window_size,
-        verbose=True,
-        fill_strategy=fill_strategy,
-    )
+    with print_section(" Creating training set ", drop_end=True):
+        X_list = []
+        y_list = []
+        for text in tqdm.tqdm(texts):
+            X_, y_, _ = create_data_language(
+                text,
+                vocabulary,
+                window_size=window_size,
+                verbose=False,
+                fill_strategy=fill_strategy,
+            )
+            X_list.append(X_)
+            y_list.append(y_)
+        X = np.concatenate(X_list, axis=0) if len(X_list) != 1 else X_list[0]
+        y = np.concatenate(y_list, axis=0) if len(y_list) != 1 else y_list[0]
 
-    split_ix = int(len(X) * train_test_split)
-    indices = np.random.permutation(len(X))
-    train_indices = indices[:split_ix]
-    val_indices = indices[split_ix:]
-    print(
-        f"Train set: {len(train_indices)}\nValidation set: {len(val_indices)}"
-    )
+        split_ix = int(len(X) * train_test_split)
+        indices = np.random.permutation(len(X))
+        train_indices = indices[:split_ix]
+        val_indices = indices[split_ix:]
+        print(
+            f"Train set: {len(train_indices)}\nValidation set: {len(val_indices)}"
+        )
 
     dataset = LanguageDataset(X, y, vocabulary=vocabulary)
 
@@ -688,15 +704,18 @@ def run_train(
     else:
         callback = None
 
-    trainer = pl.Trainer(
-        gpus=gpus,
-        max_epochs=max_epochs,
-        logger=logger,
-        early_stop_callback=callback,
-    )
-    trainer.fit(network, dataloader_t, dataloader_v)
+    with print_section(" Training ", drop_end=True):
+        trainer = pl.Trainer(
+            gpus=gpus,
+            max_epochs=max_epochs,
+            logger=logger,
+            early_stop_callback=callback,
+        )
+        trainer.fit(network, dataloader_t, dataloader_v)
 
-    save_model(network, vocabulary, output_path)
+    with print_section(" Saving the model ", drop_end=False):
+        print(output_path)
+        save_model(network, vocabulary, output_path)
 
 
 def load_model(path):
