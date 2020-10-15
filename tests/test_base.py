@@ -6,65 +6,10 @@ import pytest
 
 from mltype.base import (
     Action,
-    CharacterSampler,
-    Language,
     STATUS_CORRECT,
     STATUS_WRONG,
     TypedText,
 )
-
-
-def test_dummy():
-    assert True
-
-
-class TestCharacterSampler:
-    def test_basic(self):
-        class A(CharacterSampler):
-            pass
-
-        with pytest.raises(TypeError):
-            A()
-
-        class B(CharacterSampler):
-            def sample():
-                return "a"
-
-        assert isinstance(B(), CharacterSampler)
-
-
-class TestLanguage:
-    @pytest.mark.parametrize("window_size", [0, 1])
-    def test_generate(self, window_size):
-        texts = [".This is it."]
-
-        lng = Language.generate(
-            texts, min_char_count=1, window_size=window_size
-        )
-
-        assert lng.vocab == " .Thist"
-        assert isinstance(lng.probs, np.ndarray)
-
-        if window_size == 0:
-            assert lng.probs.shape == (7,)
-            assert lng.probs.sum() == 1
-        elif window_size == 1:
-            assert lng.probs.shape == (7, 7)
-            assert np.allclose(lng.probs.sum(axis=1), np.ones(7))
-        else:
-            raise ValueError()
-
-    @pytest.mark.parametrize("window_size", [0, 1, 2, 3])
-    def test_sample(self, window_size):
-        texts = ["Finally some real text to read"]
-
-        lng = Language.generate(
-            texts, min_char_count=1, window_size=window_size
-        )
-
-        assert lng.sample(prev_s="somet") in lng.vocab
-
-        assert len(lng.sample_many(10, prev_s="somet")) == 10
 
 
 class TestAction:
