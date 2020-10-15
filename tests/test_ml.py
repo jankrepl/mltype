@@ -1,4 +1,5 @@
 import pathlib
+from unittest.mock import Mock
 
 import numpy as np
 import pytest
@@ -20,13 +21,20 @@ class TestCreateDataLanguage:
         with pytest.raises(ValueError):
             create_data_language("great", ["g", "r", "g"])
 
-    def test_zeros(self):
+        with pytest.raises(ValueError):
+            create_data_language("great", [chr(i) for i in range(255)])
+
+    def test_zeros(self, monkeypatch):
+        fake_tqdm = Mock()
+        fake_tqdm.tqdm.side_effect = lambda x: x
+        monkeypatch.setattr("mltype.ml.tqdm", fake_tqdm)
+
         text = "world"
         vocabulary = ["d", "l", "o", "w"]  # r is missing
         vocab_size = len(vocabulary)
 
         X, y, indices = create_data_language(
-            text, vocabulary, window_size=2, fill_strategy="zeros"
+            text, vocabulary, window_size=2, fill_strategy="zeros", verbose=True
         )
 
         X_true = np.array(
@@ -53,6 +61,9 @@ class TestCreateDataLanguage:
 
         indices_true = np.arange(len(text))
 
+        # asserts
+        fake_tqdm.tqdm.assert_called_once()
+
         np.testing.assert_array_equal(X, X_true)
         np.testing.assert_array_equal(y, y_true)
         np.testing.assert_array_equal(indices, indices_true)
@@ -74,6 +85,27 @@ class TestCreateDataLanguage:
         np.testing.assert_array_equal(X, X_true)
         np.testing.assert_array_equal(y, y_true)
         np.testing.assert_array_equal(indices, indices_true)
+
+    @pytest.mark.parametrize("window_size", [1, 4])
+    @pytest.mark.parametrize("fill_strategy", ["zeros", "skip"])
+    def test_empty_text(self, window_size, fill_strategy):
+        """Make sure the dimensions are correct anyway.
+
+        It is essential for being able to concatenate with other
+        features and targets.
+        """
+        text = ""
+        vocabulary = ["a", "b"]
+
+        X, y, indices = create_data_language(
+            text,
+            vocabulary,
+            window_size=window_size,
+            fill_strategy=fill_strategy,
+        )
+
+        assert X.shape == (0, window_size)
+        assert y.shape == (0,)
 
 
 class TestSingleCharacterLSTM:
