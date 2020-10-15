@@ -23,6 +23,7 @@ class TestCreateDataLanguage:
     def test_zeros(self):
         text = "world"
         vocabulary = ["d", "l", "o", "w"]  # r is missing
+        vocab_size = len(vocabulary)
 
         X, y, indices = create_data_language(
             text, vocabulary, window_size=2, fill_strategy="zeros"
@@ -30,24 +31,24 @@ class TestCreateDataLanguage:
 
         X_true = np.array(
             [
-                [[0, 0, 0, 0], [0, 0, 0, 0]],
-                [[0, 0, 0, 0], [0, 0, 0, 1]],
-                [[0, 0, 0, 1], [0, 0, 1, 0]],
-                [[0, 0, 1, 0], [0, 0, 0, 0]],
-                [[0, 0, 0, 0], [0, 1, 0, 0]],
+                [vocab_size, vocab_size],
+                [vocab_size, 3],
+                [3, 2],
+                [2, vocab_size],
+                [vocab_size, 1],
             ],
-            dtype=np.bool,
+            dtype=np.int8,
         )
 
         y_true = np.array(
             [
-                [0, 0, 0, 1],
-                [0, 0, 1, 0],
-                [0, 0, 0, 0],
-                [0, 1, 0, 0],
-                [1, 0, 0, 0],
+                3,
+                2,
+                vocab_size,
+                1,
+                0,
             ],
-            dtype=np.bool,
+            dtype=np.int8,
         )
 
         indices_true = np.arange(len(text))
@@ -64,9 +65,9 @@ class TestCreateDataLanguage:
             text, vocabulary, window_size=2, fill_strategy="skip"
         )
 
-        X_true = np.array([[[0, 1, 0, 0], [1, 0, 0, 0]]], dtype=np.bool)
+        X_true = np.array([[1, 0]], dtype=np.int8)
 
-        y_true = np.array([[0, 0, 0, 1]], dtype=np.bool)
+        y_true = np.array([3], dtype=np.int8)
 
         indices_true = np.array([5])
 
