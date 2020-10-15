@@ -41,14 +41,14 @@ def create_data_language(
     Returns
     -------
     X : np.ndarray
-        Features of shape `(len(text), window_size, len(vocabulary)` if
-        the `fill_strategy="zeros"`. Otherwise the first dimension smaller.
-        The dtype is `np.bool`.
+        Features array of shape `(len(text), window_size)` if
+        `fill_strategy=zeros`, otherwise it might be shorter. The dtype is
+        `np.int8`. If applicable, the integer `(len(vocabulary))` represnts
+        a zero vector (out of vocabulary token).
 
     y : np.ndarray
-        Targets of shape `(len(text), len(vocabulary))` if the
-        `fill_strategy="zeros"`. Otherwise the first dimension smaller.
-        The dtype is `np.bool`.
+        Targets array of shape `(len(text),)` if `fill_strategy=zeros`,
+        otherwise it might be shorter. The dtype is `np.int8`.
 
     indices : np.ndarray
         For each sample an index of the character we are trying to predict.
@@ -64,15 +64,14 @@ def create_data_language(
         raise ValueError("There are duplicates in the vocabulary.")
 
     vocab_size = len(vocabulary)
+
+    if vocab_size >= 255:  # we need to use one integer for out of vocabulary
+        raise ValueError("The maximum vocabulary size is 255")
+
     text_size = len(text)
 
     ch2ix = defaultdict(lambda: vocab_size)
     ch2ix.update({ch: ix for ix, ch in enumerate(vocabulary)})
-
-    ohv_matrix = np.eye(vocab_size, dtype=np.bool)
-    ohv_matrix = np.concatenate(
-        [ohv_matrix, np.zeros((1, vocab_size), dtype=np.bool)], axis=0
-    )
 
     text_l = window_size * [None] + list(text)
 
@@ -94,17 +93,17 @@ def create_data_language(
             if vocab_size in feature_ixs or vocab_size == target_ix:
                 continue
 
-        X_lines.append(ohv_matrix[feature_ixs].copy())
-        y_lines.append(ohv_matrix[target_ix].copy())
+        X_lines.append(feature_ixs)
+        y_lines.append(target_ix)
         indices_lines.append(i)
 
     if not X_lines:
-        X = np.empty((0, window_size, vocab_size), dtype=bool)
-        y = np.empty((0, vocab_size), dtype=bool)
+        X = np.empty((0, window_size), dtype=np.int8)
+        y = np.empty((0,), dtype=np.int8)
 
     else:
-        X = np.array(X_lines)
-        y = np.array(y_lines)
+        X = np.array(X_lines, dtype=np.int8)
+        y = np.array(y_lines, dtype=np.int8)
 
     indices = np.array(indices_lines)
 
@@ -293,12 +292,22 @@ class LanguageDataset(torch.utils.data.Dataset):
         self.vocabulary = vocabulary
         self.transform = transform
 
+        vocab_size = len(vocabulary)
+
+        ch2ix = defaultdict(lambda: vocab_size)
+        ch2ix.update({ch: ix for ix, ch in enumerate(vocabulary)})
+
+        ohv_matrix = np.eye(vocab_size, dtype=np.float32)
+        self.ohv_matrix = np.concatenate(
+            [ohv_matrix, np.zeros((1, vocab_size), dtype=np.float32)], axis=0
+        )
+
     def __len__(self):
         return len(self.X)
 
     def __getitem__(self, ix):
-        X_sample = torch.from_numpy(self.X[ix])
-        y_sample = torch.from_numpy(self.y[ix])
+        X_sample = torch.from_numpy(self.ohv_matrix[self.X[ix]])
+        y_sample = torch.from_numpy(self.ohv_matrix[self.y[ix]])
 
         if self.transform is not None:
             X_sample, y_sample = self.transform(X_sample, y_sample)
