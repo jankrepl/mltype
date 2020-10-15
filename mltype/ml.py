@@ -438,29 +438,19 @@ class SingleCharacterLSTM(pl.LightningModule):
                 Tensor of shape `(batch_size)` representing a per sample loss.
         """
         x, y, _ = batch
-        x, y = x.to(torch.float32), y.to(torch.float32)
         probs, _, _ = self.forward(x)
         loss = torch.nn.functional.binary_cross_entropy(probs, y)
 
-        result = pl.TrainResult(minimize=loss)
-        result.log("train_loss", loss, prog_bar=True)
+        self.log("train_loss", loss, prog_bar=False)
 
-        return result
+        return loss
 
     def validation_step(self, batch, batch_idx):
         x, y, vocabulary = batch
-        x, y = x.to(torch.float32), y.to(torch.float32)
         probs, _, _ = self.forward(x)
         loss = torch.nn.functional.binary_cross_entropy(probs, y)
 
-        # result = pl.EvalResult()
-        # result.log("val_loss", loss, prog_bar=False)
-        # result.log("vocabulary", vocabulary, prog_bar=False)
-        # return result
-
-        result = {"val_loss": loss}
-
-        self.log_dict(result)
+        self.log("val_loss", loss, prog_bar=True)
 
         return vocabulary
 

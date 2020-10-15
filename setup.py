@@ -9,7 +9,7 @@ INSTALL_REQUIRES = [
     "click",
     "numpy",
     "torch",
-    "pytorch-lightning",
+    "pytorch-lightning>=1.0.0",
     "tqdm",
 ]
 
