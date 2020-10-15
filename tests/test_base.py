@@ -21,6 +21,8 @@ class TestAction:
         ts_1 = datetime.now()
         ts_2 = datetime.now()
 
+        assert Action("b", STATUS_CORRECT, ts_1) != "wrong_type"
+
         assert Action("a", STATUS_CORRECT, ts_1) == Action(
             "a", STATUS_CORRECT, ts_1
         )
@@ -38,6 +40,9 @@ class TestAction:
 class TestTypedText:
     def test_basic(self):
         tt = TypedText("hello")
+
+        assert tt == tt
+        assert tt != "wrong type"
 
         # nothing typed
         assert tt.elapsed_seconds == 0
@@ -100,6 +105,7 @@ class TestTypedText:
         assert tt.compute_accuracy() == 5 / 7
 
         assert tt.check_finished()
+        assert tt.check_finished(force_perfect=False)
 
         assert tt == tt
 
