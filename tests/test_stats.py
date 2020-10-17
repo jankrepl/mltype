@@ -18,6 +18,6 @@ def test_time_per_character():
     stats = times_per_character(tt)
 
     assert len(stats) == 2
-    assert {"e", "l"} ==  set(stats.keys())
+    assert {"e", "l"} == set(stats.keys())
     assert len(stats["e"]) == 1
     assert len(stats["l"]) == 2

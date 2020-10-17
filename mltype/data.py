@@ -25,6 +25,7 @@ def file2text(filepath, verbose=True):
     """
     with filepath.open("r") as f:
         texts = [line.strip() for line in f.readlines()]
+        texts = [x for x in texts if x and not x.isspace()]
 
     if verbose:
         print(filepath.name)
