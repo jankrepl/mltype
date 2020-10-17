@@ -13,7 +13,7 @@ from mltype.ml import (
     sample_char,
     sample_text,
     save_model,
-    text2features
+    text2features,
 )
 
 
@@ -112,27 +112,28 @@ class TestCreateDataLanguage:
         assert y.shape == (0,)
         assert indices.shape == (0,)
 
+
 class TestText2Features:
     def test_basic(self):
         text = "aabd"
         vocabulary = ["a", "b", "c"]
 
-
-        res_true = np.array([
-            [1, 0, 0],
-            [1, 0, 0],
-            [0, 1, 0],
-            [0, 0, 0]], dtype=np.bool
+        res_true = np.array(
+            [[1, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 0]], dtype=np.bool
         )
         res = text2features(text, vocabulary)
 
         np.testing.assert_array_equal(res, res_true)
 
+
 class TestSampleChar:
     def test_error(self):
         with pytest.raises(ValueError):
-            sample_char(Mock(spec=torch.nn.Module), ["a", "b"],
-                        previous_char="aasdfsadfsa")
+            sample_char(
+                Mock(spec=torch.nn.Module),
+                ["a", "b"],
+                previous_char="aasdfsadfsa",
+            )
 
     @pytest.mark.parametrize("top_k", [None, 2])
     @pytest.mark.parametrize("random_state", [None, 3])
@@ -142,15 +143,18 @@ class TestSampleChar:
         network.return_value = torch.tensor([[0, 1, 0]]), "h", "c"
         vocabulary = ["a", "b", "c"]
 
-        ch, h, c = sample_char(network,
-                         vocabulary,
-                         previous_char=previous_char,
-                         random_state=random_state,
-                         top_k=top_k)
+        ch, h, c = sample_char(
+            network,
+            vocabulary,
+            previous_char=previous_char,
+            random_state=random_state,
+            top_k=top_k,
+        )
 
         assert ch == "b"
         assert h == "h"
         assert c == "c"
+
 
 class TestSampleText:
     @pytest.mark.parametrize("n_chars", [0, 2, 5])
@@ -163,13 +167,16 @@ class TestSampleText:
         monkeypatch.setattr("mltype.ml.sample_char", fake_sample_char)
         monkeypatch.setattr("mltype.ml.tqdm", fake_tqdm)
 
-        res = sample_text(n_chars,
-                          Mock(spec=torch.nn.Module),
-                          ["a"],
-                          random_state=1,
-                          verbose=True)
+        res = sample_text(
+            n_chars,
+            Mock(spec=torch.nn.Module),
+            ["a"],
+            random_state=1,
+            verbose=True,
+        )
 
         assert res == n_chars * "b"
+
 
 class TestLanguageDataset:
     def test_overall(self):
@@ -178,7 +185,7 @@ class TestLanguageDataset:
 
         X = np.array([[0, 0, 3], [1, 0, 2]], dtype=np.int8)
         y = np.array([2, 0], dtype=np.int8)
-        transform = lambda x,y: (x,y)
+        transform = lambda x, y: (x, y)
 
         ld = LanguageDataset(X, y, vocabulary, transform=transform)
 
@@ -187,18 +194,15 @@ class TestLanguageDataset:
         X_sample, y_sample, vocabulary_ = ld[0]
 
         X_sample_true = np.array(
-            [
-                [1, 0, 0],
-                [1, 0, 0],
-                [0, 0, 0]
-
-        ], dtype=np.float32)
+            [[1, 0, 0], [1, 0, 0], [0, 0, 0]], dtype=np.float32
+        )
 
         y_sample_true = np.array([0, 0, 1], dtype=np.float32)
 
         assert vocabulary_ == vocabulary
         np.testing.assert_array_equal(X_sample, X_sample_true)
         np.testing.assert_array_equal(y_sample, y_sample_true)
+
 
 class TestSingleCharacterLSTM:
     def test_basic(self, tmpdir):
@@ -278,4 +282,3 @@ class TestSingleCharacterLSTM:
             batch_size,
             hparams["hidden_size"],
         )
-
