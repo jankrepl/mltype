@@ -339,7 +339,7 @@ class TestRunTrain:
         model_path.touch()
 
         with pytest.raises(FileExistsError):
-            run_train(["some text"], "a")
+            run_train(["some text"], "a", path_output=tmpdir_)
 
     @pytest.mark.parametrize("early_stopping", [True, False])
     @pytest.mark.parametrize("use_mlflow", [True, False])
