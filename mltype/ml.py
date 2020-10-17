@@ -140,7 +140,7 @@ def text2features(text, vocabulary):
     for i, ch in enumerate(text):
         try:
             output[i, ch2ix[ch]] = True
-        except IndexError:
+        except KeyError:
             pass
 
     return output
@@ -193,6 +193,8 @@ def sample_char(
         features = text2features(previous_char, vocabulary)
     else:
         features = np.zeros((1, len(vocabulary)), dtype=np.bool)
+
+    network.eval()
 
     features = features[None, ...]  # add batch dimension
 

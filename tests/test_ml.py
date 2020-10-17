@@ -9,7 +9,9 @@ from mltype.ml import (
     SingleCharacterLSTM,
     create_data_language,
     load_model,
+    sample_char,
     save_model,
+    text2features
 )
 
 
@@ -106,7 +108,47 @@ class TestCreateDataLanguage:
 
         assert X.shape == (0, window_size)
         assert y.shape == (0,)
+        assert indices.shape == (0,)
 
+class TestText2Features:
+    def test_basic(self):
+        text = "aabd"
+        vocabulary = ["a", "b", "c"]
+
+
+        res_true = np.array([
+            [1, 0, 0],
+            [1, 0, 0],
+            [0, 1, 0],
+            [0, 0, 0]], dtype=np.bool
+        )
+        res = text2features(text, vocabulary)
+
+        np.testing.assert_array_equal(res, res_true)
+
+class TestSampleChar:
+    def test_error(self):
+        with pytest.raises(ValueError):
+            sample_char(Mock(spec=torch.nn.Module), ["a", "b"],
+                        previous_char="aasdfsadfsa")
+
+    @pytest.mark.parametrize("top_k", [None, 2])
+    @pytest.mark.parametrize("random_state", [None, 3])
+    @pytest.mark.parametrize("previous_char", [None, "s"])
+    def test_basic(self, top_k, random_state, previous_char):
+        network = Mock(spec=torch.nn.Module)
+        network.return_value = torch.tensor([[0, 1, 0]]), "h", "c"
+        vocabulary = ["a", "b", "c"]
+
+        ch, h, c = sample_char(network,
+                         vocabulary,
+                         previous_char=previous_char,
+                         random_state=random_state,
+                         top_k=top_k)
+
+        assert ch == "b"
+        assert h == "h"
+        assert c == "c"
 
 class TestSingleCharacterLSTM:
     def test_basic(self, tmpdir):
@@ -184,6 +226,3 @@ class TestSingleCharacterLSTM:
             hparams["hidden_size"],
         )
 
-
-class SampleCharacter:
-    pass
