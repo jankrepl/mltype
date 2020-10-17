@@ -474,7 +474,7 @@ class SingleCharacterLSTM(pl.LightningModule):
         return probs, h_n, c_n
 
     def training_step(self, batch, batch_idx):
-        """Implement training step.
+        """Run training step.
 
         Necessary for pytorch-lightning.
 
@@ -501,6 +501,27 @@ class SingleCharacterLSTM(pl.LightningModule):
         return loss
 
     def validation_step(self, batch, batch_idx):
+        """Run validation step.
+
+        Optional for pytorch-lightning.
+
+        Parameters
+        ----------
+        batch : tuple
+            Batch of validation samples. The exact definition depends
+            on the dataloader.
+
+
+        batch_idx : idx
+            Index of the batch.
+
+        Returns
+        -------
+        vocabulary : list
+            Vocabulary in order to have access in
+            `validation_epoch_end`.
+
+        """
         x, y, vocabulary = batch
         probs, _, _ = self.forward(x)
         loss = torch.nn.functional.binary_cross_entropy(probs, y)
@@ -510,14 +531,20 @@ class SingleCharacterLSTM(pl.LightningModule):
         return vocabulary
 
     def validation_epoch_end(self, outputs):
+        """Run epoch end validation logic.
+
+        We sample 5 times 100 characters from the current network. We
+        then print to the standard output.
+
+        Parameters
+        ----------
+        outputs : list
+            List of batches that were collected over the validation
+            set with `validation_step`.
+
+        """
         if self.logger is None:
             return
-
-        mlflow_client = self.logger.experiment
-        run_id = self.logger.run_id
-        artifacts_uri = mlflow_client.get_run(run_id).info.artifact_uri
-        artifacts_path = pathlib.Path(artifacts_uri.partition("file:")[2])
-        output_path = artifacts_path / f"{datetime.now()}.txt"
 
         vocabulary = np.array(outputs[-1])[:, 0]
 
@@ -528,12 +555,24 @@ class SingleCharacterLSTM(pl.LightningModule):
             sample_text(n_chars, self, vocabulary) for _ in range(n_samples)
         ]
         text = "\n".join(lines)
+
+        mlflow_client = self.logger.experiment
+        run_id = self.logger.run_id
+        artifacts_uri = mlflow_client.get_run(run_id).info.artifact_uri
+        artifacts_path = pathlib.Path(artifacts_uri.partition("file:")[2])
+        output_path = artifacts_path / f"{datetime.now()}.txt"
+
         output_path.write_text(text)
 
     def configure_optimizers(self):
         """Configure optimizers.
 
         Necessary for pytorch-lightning.
+
+        Returns
+        -------
+        optimizer : Optimizer
+            The chosen optimizer.
         """
         optimizer = torch.optim.Adam(self.parameters(), lr=1e-3)
 

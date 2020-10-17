@@ -258,6 +258,9 @@ class TestSingleCharacterLSTM:
         h = torch.rand(hparams["n_layers"], batch_size, hparams["hidden_size"])
         c = torch.rand(hparams["n_layers"], batch_size, hparams["hidden_size"])
 
+        with pytest.raises(ValueError):
+            network(o1, h, c)
+
         o2, h_n2, c_n2 = network(x2, h=h, c=c)
 
         assert torch.is_tensor(o2)

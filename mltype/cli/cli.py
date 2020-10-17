@@ -148,7 +148,7 @@ def list():
 
 @cli.command()
 @click.argument("path", nargs=-1, type=click.Path())
-@click.argument("model_name", type=click.Path())
+@click.argument("model_name", type=str)
 @click.option(
     "-b",
     "--batch-size",
@@ -302,6 +302,9 @@ def train(
                 ValueError("Unrecognized object")
 
             all_texts.extend(texts)
+
+    if not all_texts:
+        raise ValueError("Did not manage to read any text")
 
     run_train(
         all_texts,
