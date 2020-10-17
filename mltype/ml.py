@@ -598,6 +598,80 @@ def run_train(
     early_stopping=True,
     gpus=None,
 ):
+    """Run the training loop.
+
+    Note that the parameters are also explained in the cli of `mlt train`.
+
+    Paramaters
+    ----------
+    texts : list
+        List of str representing all texts we would like to train on.
+
+    name : str
+        Name of the model. This name is only used when we save the model -
+        it is not hardcoded anywhere in the serialization.
+
+    max_epochs : int
+        Maximum number of epochs. Note that the number of actual epochs
+        can be lower if we activate the `early_stopping` flag.
+
+    window_size : int
+        Number of previous characters to consider when predicting the next
+        character. The higher the number the longer the memory we are
+        enforcing. Howerever, at the same time, the training becomes slower.
+
+    batch_size : int
+        Number of samples in one batch.
+
+    vocab_size : int
+        Maximum number of characters to be put in the vocabulary. Note that
+        one can explicityly exclude characters via `illegal_chars`. The higher
+        this number the bigger the feature vectors are and the slower the
+        training.
+
+    fill_strategy : str, {"zeros", "skip"}
+        Determines how to deal with out of vocabulary characters. When
+        "zeros" then we simply encode them as zero vectors. If "skip", we
+        skip a given sample if any of the characters in the window or the
+        predicted character are not in the vocabulary.
+
+    illegal_chars : str or None
+        If specified, then each character of the str represents a forbidden
+        character that we do not put in the vocabulary.
+
+    train_test_split : float
+        Float in the range (0, 1) representing the percentage of the training
+        set with respect to the entire dataset.
+
+    hidden_size : int
+        Hidden size of LSTM cells (equal in all layers).
+
+    dense_size : int
+        Size of the dense layer that is bridging the hidden state outputted
+        by the LSTM and the final output probabilities over the vocabulary.
+
+    n_layers : int
+        Number of layers inside of the LSTM.
+
+    path_output : None or pathlib.Path or str
+        If specified, it is an alternative output folder when the trained
+        models and logging information will be stored. If not specified
+        the output folder is by default set to `~/.mltype`.
+
+    use_mlflow : bool
+        If active, than we use mlflow for logging of training and validation
+        loss. Additionally, at the end of each epoch we generate a few
+        sample texts to demonstrate how good/bad the current network is.
+
+    early_stopping : bool
+        If True, then we monitor the validation loss and if it does not
+        improve for a certain number of epochs then we stop the traning.
+
+    gpus : int or None
+        If None or 0, no GPUs are used (only CPUs). Otherwise, it represents
+        the number of GPUs to be used (using the data parallelization
+        strategy).
+    """
     illegal_chars = illegal_chars or ""
     output_path = get_cache_dir(path_output) / "languages" / name
 

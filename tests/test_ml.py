@@ -10,6 +10,7 @@ from mltype.ml import (
     LanguageDataset,
     create_data_language,
     load_model,
+    run_train,
     sample_char,
     sample_text,
     save_model,
@@ -181,13 +182,11 @@ class TestSampleText:
 class TestLanguageDataset:
     def test_overall(self):
         vocabulary = ["a", "b", "c"]
-        window_size = 3
 
         X = np.array([[0, 0, 3], [1, 0, 2]], dtype=np.int8)
         y = np.array([2, 0], dtype=np.int8)
-        transform = lambda x, y: (x, y)
 
-        ld = LanguageDataset(X, y, vocabulary, transform=transform)
+        ld = LanguageDataset(X, y, vocabulary, transform=lambda x, y: (x, y))
 
         assert len(ld) == 2
 
@@ -329,3 +328,39 @@ class TestSingleCharacterLSTM:
         network.validation_epoch_end([np.ones((vocab_size, 2))])
 
         assert len(list(tmp_out.iterdir())) == 1
+
+
+class TestRunTrain:
+    def test_error(self, tmpdir):
+        tmpdir_ = pathlib.Path(str(tmpdir))
+        model_path = tmpdir_ / "languages" / "a"
+
+        model_path.parent.mkdir(parents=True)
+        model_path.touch()
+
+        with pytest.raises(FileExistsError):
+            run_train(["some text"], "a")
+
+    @pytest.mark.parametrize("early_stopping", [True, False])
+    @pytest.mark.parametrize("use_mlflow", [True, False])
+    @pytest.mark.parametrize("illegal_chars", [None, "z"])
+    def test_overall(
+        self, monkeypatch, tmpdir, illegal_chars, use_mlflow, early_stopping
+    ):
+        tmpdir_ = pathlib.Path(str(tmpdir))
+        window_size = 1
+        texts = ["abcd", "yxz"]
+        name = "test_model"
+
+        run_train(
+            texts,
+            name,
+            early_stopping=early_stopping,
+            illegal_chars=illegal_chars,
+            max_epochs=1,
+            path_output=tmpdir_,
+            use_mlflow=use_mlflow,
+            window_size=window_size,
+        )
+
+        assert (tmpdir_ / "languages" / name).exists()

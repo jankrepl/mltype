@@ -1,7 +1,6 @@
 from datetime import datetime
 import pathlib
 
-import numpy as np
 import pytest
 
 from mltype.base import (
