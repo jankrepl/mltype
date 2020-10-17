@@ -664,6 +664,8 @@ def run_train(
         logger = pl.loggers.MLFlowLogger(
             "mltype", save_dir=get_cache_dir() / "logs" / "mlruns"
         )
+        print(f"Run ID: {logger.run_id}")
+
         logger.log_hyperparams(
             {
                 "fill_strategy": fill_strategy,
