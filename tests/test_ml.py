@@ -282,3 +282,50 @@ class TestSingleCharacterLSTM:
             batch_size,
             hparams["hidden_size"],
         )
+
+    def test_pl(self, monkeypatch, tmpdir):
+
+        batch_size = 2
+        window_size = 3
+        vocab_size = 4
+
+        network = SingleCharacterLSTM(vocab_size)
+        X_batch = torch.rand((batch_size, window_size, vocab_size))
+        y_batch = torch.rand((batch_size, vocab_size))
+
+        inp = (X_batch, y_batch, None)
+
+        # training step
+        out = network.training_step(inp, 2)
+
+        assert torch.is_tensor(out)
+        assert out.ndim == 0
+
+        # validation step
+        vocab = network.validation_step(inp, 2)
+
+        assert vocab is None
+
+        # optimizer
+        optimizer = network.configure_optimizers()
+
+        assert isinstance(optimizer, torch.optim.Optimizer)
+
+        # validation epoch end
+        assert network.validation_epoch_end(None) is None
+        tmp_out = pathlib.Path(str(tmpdir))
+
+        fake_logger = Mock()
+        fake_sample_text = Mock(return_value="some text")
+        fake_get_mlflow = Mock(return_value=tmp_out)
+        monkeypatch.setattr(network, "logger", fake_logger)
+        monkeypatch.setattr("mltype.ml.sample_text", fake_sample_text)
+        monkeypatch.setattr(
+            "mltype.ml.get_mlflow_artifacts_path", fake_get_mlflow
+        )
+
+        assert not list(tmp_out.iterdir())
+
+        network.validation_epoch_end([np.ones((vocab_size, 2))])
+
+        assert len(list(tmp_out.iterdir())) == 1

@@ -490,7 +490,8 @@ class SingleCharacterLSTM(pl.LightningModule):
         Returns
         -------
         loss : torch.Tensor
-                Tensor of shape `(batch_size)` representing a per sample loss.
+                Tensor scalar representing the mean binary cross entropy
+                over the batch.
         """
         x, y, _ = batch
         probs, _, _ = self.forward(x)
@@ -556,8 +557,9 @@ class SingleCharacterLSTM(pl.LightningModule):
         ]
         text = "\n".join(lines)
 
-        artifacts_path = get_mlflow_artifacts_path(self.logger.experiment,
-                                                   self.logger.run_id)
+        artifacts_path = get_mlflow_artifacts_path(
+            self.logger.experiment, self.logger.run_id
+        )
 
         output_path = artifacts_path / f"{datetime.now()}.txt"
 

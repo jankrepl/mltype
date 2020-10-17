@@ -230,7 +230,7 @@ def list():
     "--path-output",
     type=click.Path(),
     help="Custom path where to save the trained models and logging details. "
-    "If not provided it defaults to `~/.mltype`."
+    "If not provided it defaults to `~/.mltype`.",
 )
 @click.option(
     "-s",
@@ -330,7 +330,7 @@ def train(
         use_mlflow=use_mlflow,
         early_stopping=early_stopping,
         gpus=gpus,
-        path_output=path_output
+        path_output=path_output,
     )
     print("Done")
 
