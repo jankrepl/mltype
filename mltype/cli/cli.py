@@ -1,4 +1,5 @@
 """Command line interface."""
+from collections import Counter
 import pathlib
 import pprint
 import warnings
@@ -132,7 +133,7 @@ def file(
 
 
 @cli.command()
-def list():
+def ls():
     """List all language models"""
     from mltype.utils import get_cache_dir
 
@@ -333,6 +334,68 @@ def train(
         path_output=path_output,
     )
     print("Done")
+
+
+@cli.command()
+@click.argument("characters")
+@click.option(
+    "-f",
+    "--force-perfect",
+    is_flag=True,
+    help="All characters need to be typed correctly",
+)
+@click.option(
+    "-i",
+    "--instant-death",
+    is_flag=True,
+    help="End game after the first mistake",
+)
+@click.option(
+    "-n",
+    "--n-chars",
+    type=int,
+    default=100,
+    show_default=True,
+    help="Number of characters to generate",
+)
+@click.option(
+    "-o",
+    "--output-file",
+    type=click.Path(),
+    help="Path to where to save the result file",
+)
+@click.option(
+    "-t",
+    "--target_wpm",
+    type=int,
+    help="The desired speed to be shown as a guide",
+)
+def random(
+    characters, force_perfect, instant_death, n_chars, output_file, target_wpm
+):
+    """Sample characters randomly from a provided vocabulary"""
+    import numpy as np
+
+    from mltype.interactive import main_basic
+
+    if not characters:
+        raise ValueError("No characters were provided")
+
+    c = Counter(characters)
+    vocabulary = list(c.keys())
+    counts = np.array([c[x] for x in vocabulary])
+
+    p = counts / counts.sum()
+
+    text = "".join(np.random.choice(vocabulary, size=n_chars, p=p))
+
+    main_basic(
+        text,
+        force_perfect=force_perfect,
+        output_file=output_file,
+        instant_death=instant_death,
+        target_wpm=target_wpm,
+    )
 
 
 @cli.command()

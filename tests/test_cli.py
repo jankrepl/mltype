@@ -8,7 +8,7 @@ import mltype.cli.cli
 
 
 @pytest.mark.parametrize(
-    "cmd", ["file", "list", "raw", "replay", "sample", "train"]
+    "cmd", ["file", "ls", "random", "raw", "replay", "sample", "train"]
 )
 def test_help(cmd):
     fun = getattr(mltype.cli.cli, cmd)
@@ -19,7 +19,7 @@ def test_help(cmd):
     assert result.exit_code == 0
 
 
-def test_list(tmpdir, monkeypatch):
+def test_ls(tmpdir, monkeypatch):
     new_home = pathlib.Path(str(tmpdir))
     path_languages = new_home / ".mltype" / "languages"
     path_languages.mkdir(parents=True)
@@ -27,7 +27,7 @@ def test_list(tmpdir, monkeypatch):
     monkeypatch.setenv("HOME", str(new_home))
 
     runner = CliRunner()
-    mlt_list = getattr(mltype.cli.cli, "list")
+    mlt_list = getattr(mltype.cli.cli, "ls")
     result = runner.invoke(mlt_list, [])
 
     assert result.exit_code == 0
