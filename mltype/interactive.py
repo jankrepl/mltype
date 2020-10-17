@@ -355,7 +355,7 @@ def main_basic(text, force_perfect, output_file, instant_death, target_wpm):
 
     with print_section(" Statistics ", fill_char="=", add_ts=False):
         print(
-            f"Accuracy: {tt.compute_accuracy():.1f}\n"
+            f"Accuracy: {tt.compute_accuracy():.1%}\n"
             f"WPM: {tt.compute_wpm():.1f}"
         )
 
