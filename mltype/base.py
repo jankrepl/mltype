@@ -19,7 +19,7 @@ class Action:
         a backspace will be represented as `pressed_key=None`.
 
     status : int
-        What was the status AFTER pusing the key. It should be one
+        What was the status AFTER pushing the key. It should be one
         of the following integers:
             * STATUS_BACKSPACE
             * STATUS_CORRECT
@@ -244,7 +244,7 @@ class TypedText:
             Index of the character in the text.
 
         ch : str or None
-            The characgter that was typed. Note that if None then we assume
+            The character that was typed. Note that if None then we assume
             that the user used backspace.
         """
         if not (0 <= i < self.n_characters):
