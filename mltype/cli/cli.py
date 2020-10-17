@@ -226,6 +226,13 @@ def list():
     show_default=True,
 )
 @click.option(
+    "-p",
+    "--path-output",
+    type=click.Path(),
+    help="Custom path where to save the trained models and logging details. "
+    "If not provided it defaults to `~/.mltype`."
+)
+@click.option(
     "-s",
     "--early-stopping",
     is_flag=True,
@@ -269,6 +276,7 @@ def train(
     max_epochs,
     early_stopping,
     n_layers,
+    path_output,
     train_test_split,
     use_mlflow,
     vocab_size,
@@ -322,6 +330,7 @@ def train(
         use_mlflow=use_mlflow,
         early_stopping=early_stopping,
         gpus=gpus,
+        path_output=path_output
     )
     print("Done")
 

@@ -10,7 +10,7 @@ import pytorch_lightning as pl
 import torch
 import tqdm
 
-from mltype.utils import get_cache_dir, print_section
+from mltype.utils import get_cache_dir, get_mlflow_artifacts_path, print_section
 
 warnings.filterwarnings("ignore")
 
@@ -556,10 +556,9 @@ class SingleCharacterLSTM(pl.LightningModule):
         ]
         text = "\n".join(lines)
 
-        mlflow_client = self.logger.experiment
-        run_id = self.logger.run_id
-        artifacts_uri = mlflow_client.get_run(run_id).info.artifact_uri
-        artifacts_path = pathlib.Path(artifacts_uri.partition("file:")[2])
+        artifacts_path = get_mlflow_artifacts_path(self.logger.experiment,
+                                                   self.logger.run_id)
+
         output_path = artifacts_path / f"{datetime.now()}.txt"
 
         output_path.write_text(text)
@@ -592,12 +591,13 @@ def run_train(
     hidden_size=32,
     dense_size=32,
     n_layers=1,
+    path_output=None,
     use_mlflow=True,
     early_stopping=True,
     gpus=None,
 ):
     illegal_chars = illegal_chars or ""
-    output_path = get_cache_dir() / "languages" / name
+    output_path = get_cache_dir(path_output) / "languages" / name
 
     if output_path.exists():
         raise FileExistsError(f"The model {name} already exists")
@@ -662,7 +662,7 @@ def run_train(
     if use_mlflow:
         print("Logging with MLflow")
         logger = pl.loggers.MLFlowLogger(
-            "mltype", save_dir=get_cache_dir() / "logs" / "mlruns"
+            "mltype", save_dir=get_cache_dir(path_output) / "logs" / "mlruns"
         )
         print(f"Run ID: {logger.run_id}")
 
