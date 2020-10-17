@@ -34,9 +34,3 @@ def times_per_character(tt):
 
     return stats
 
-
-def mean_time_per_character(tt):
-    stats = times_per_character(tt)
-
-    res = {ch: np.mean(l) for ch, l in stats.items()}
-    return res
