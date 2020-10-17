@@ -2,8 +2,6 @@
 
 from collections import defaultdict
 
-import numpy as np
-
 from mltype.base import STATUS_CORRECT
 
 
@@ -33,10 +31,3 @@ def times_per_character(tt):
         stats[tt.text[ix]].append(delta)
 
     return stats
-
-
-def mean_time_per_character(tt):
-    stats = times_per_character(tt)
-
-    res = {ch: np.mean(l) for ch, l in stats.items()}
-    return res

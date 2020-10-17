@@ -15,7 +15,7 @@ def get_cache_dir(predefined_path=None):
 
     Parameters
     ----------
-    predefined_path : None or pathlib.Path
+    predefined_path : None or pathlib.Path or str
         If provided, we just return the same path. We potentially
         create the directory if it does not exist. If it is not
         provided we use `$HOME/.mltype`.
@@ -26,11 +26,37 @@ def get_cache_dir(predefined_path=None):
         Path to where the caching directory is located.
     """
     if predefined_path is not None:
-        path = predefined_path
+        path = pathlib.Path(str(predefined_path))
     else:
         path = pathlib.Path.home() / ".mltype"
 
     path.mkdir(parents=True, exist_ok=True)
+
+    return path
+
+
+def get_mlflow_artifacts_path(client, run_id):
+    """Get path to where the artifacts are located.
+
+    The benefit is that we can log any file into it and even
+    create a custom folder hierarachy.
+
+    Parameters
+    ----------
+    client : mlflow.tracking.MlflowClient
+        Client.
+
+    run_id : str
+        Unique identifier of a run.
+
+    Returns
+    -------
+    path : pathlib.Path
+        Path to the root folder of artifacts.
+    """
+    artifacts_uri = client.get_run(run_id).info.artifact_uri
+    path_str = artifacts_uri.partition("file:")[2]
+    path = pathlib.Path(path_str)
 
     return path
 

@@ -10,7 +10,7 @@ import pytorch_lightning as pl
 import torch
 import tqdm
 
-from mltype.utils import get_cache_dir, print_section
+from mltype.utils import get_cache_dir, get_mlflow_artifacts_path, print_section
 
 warnings.filterwarnings("ignore")
 
@@ -140,7 +140,7 @@ def text2features(text, vocabulary):
     for i, ch in enumerate(text):
         try:
             output[i, ch2ix[ch]] = True
-        except IndexError:
+        except KeyError:
             pass
 
     return output
@@ -193,6 +193,8 @@ def sample_char(
         features = text2features(previous_char, vocabulary)
     else:
         features = np.zeros((1, len(vocabulary)), dtype=np.bool)
+
+    network.eval()
 
     features = features[None, ...]  # add batch dimension
 
@@ -283,12 +285,40 @@ def sample_text(
 
 
 class LanguageDataset(torch.utils.data.Dataset):
-    """Language dataset."""
+    """Language dataset.
 
-    def __init__(self, X, y, indices=None, vocabulary=None, transform=None):
+    All the inputs of this class should be generated via
+    `create_data_language`.
+
+    Parameters
+    ----------
+    X : np.ndarray
+        Array of shape (n_samples, window_size) of dtype `np.int8`.
+        It represents the features.
+
+    y : np.ndarray
+        Array of shape (n_samples,) of dtype `np.int8`.
+        It represents the targets
+
+    vocabulary : list
+        List of characters in the vocabulary.
+
+    transform : callable or None
+        Some callable that inputs `X` and `y` and returns some
+        modified instances of them.
+
+    Attributes
+    ----------
+    ohv_matrix : np.ndarray
+        Matrix of shape `(vocab_size + 1, vocab_size)`. The submatrix
+        `ohv_matrix[:vocab_size, :]` is an identity matrix and is used
+        for fast creation of one hot vectors. The last row of `ohv_matrix`
+        is a zero vector and is used for encoding out-of-vocabulary characters.
+    """
+
+    def __init__(self, X, y, vocabulary, transform=None):
         self.X = X
         self.y = y
-        self.indices = indices
         self.vocabulary = vocabulary
         self.transform = transform
 
@@ -303,9 +333,34 @@ class LanguageDataset(torch.utils.data.Dataset):
         )
 
     def __len__(self):
+        """Compute the number of samples."""
         return len(self.X)
 
     def __getitem__(self, ix):
+        """Get a single sample.
+
+        Parameters
+        ----------
+        ix : int
+            Index od the sample.
+
+        Returns
+        -------
+        X_sample : np.ndarray
+            Array of shape `(window_size, vocab_size)` where each
+            row is either an one hot vector (inside of vocabulary character) or
+            a zero vector (out of vocabulary character).
+
+        y_sample : np.ndarray
+            Array of shape `(vocab_size,)` representing either the one hot
+            encoding of the character to be predicted (inside of vocabulary
+            character) or a zero vector (out of vocabulary character).
+
+        vocabulary : list
+            The vocabulary. The reason why we want to provide this too
+            is to have access to it during validation.
+        """
+
         X_sample = torch.from_numpy(self.ohv_matrix[self.X[ix]])
         y_sample = torch.from_numpy(self.ohv_matrix[self.y[ix]])
 
@@ -419,7 +474,7 @@ class SingleCharacterLSTM(pl.LightningModule):
         return probs, h_n, c_n
 
     def training_step(self, batch, batch_idx):
-        """Implement training step.
+        """Run training step.
 
         Necessary for pytorch-lightning.
 
@@ -435,7 +490,8 @@ class SingleCharacterLSTM(pl.LightningModule):
         Returns
         -------
         loss : torch.Tensor
-                Tensor of shape `(batch_size)` representing a per sample loss.
+                Tensor scalar representing the mean binary cross entropy
+                over the batch.
         """
         x, y, _ = batch
         probs, _, _ = self.forward(x)
@@ -446,6 +502,27 @@ class SingleCharacterLSTM(pl.LightningModule):
         return loss
 
     def validation_step(self, batch, batch_idx):
+        """Run validation step.
+
+        Optional for pytorch-lightning.
+
+        Parameters
+        ----------
+        batch : tuple
+            Batch of validation samples. The exact definition depends
+            on the dataloader.
+
+
+        batch_idx : idx
+            Index of the batch.
+
+        Returns
+        -------
+        vocabulary : list
+            Vocabulary in order to have access in
+            `validation_epoch_end`.
+
+        """
         x, y, vocabulary = batch
         probs, _, _ = self.forward(x)
         loss = torch.nn.functional.binary_cross_entropy(probs, y)
@@ -455,14 +532,20 @@ class SingleCharacterLSTM(pl.LightningModule):
         return vocabulary
 
     def validation_epoch_end(self, outputs):
+        """Run epoch end validation logic.
+
+        We sample 5 times 100 characters from the current network. We
+        then print to the standard output.
+
+        Parameters
+        ----------
+        outputs : list
+            List of batches that were collected over the validation
+            set with `validation_step`.
+
+        """
         if self.logger is None:
             return
-
-        mlflow_client = self.logger.experiment
-        run_id = self.logger.run_id
-        artifacts_uri = mlflow_client.get_run(run_id).info.artifact_uri
-        artifacts_path = pathlib.Path(artifacts_uri.partition("file:")[2])
-        output_path = artifacts_path / f"{datetime.now()}.txt"
 
         vocabulary = np.array(outputs[-1])[:, 0]
 
@@ -473,12 +556,24 @@ class SingleCharacterLSTM(pl.LightningModule):
             sample_text(n_chars, self, vocabulary) for _ in range(n_samples)
         ]
         text = "\n".join(lines)
+
+        artifacts_path = get_mlflow_artifacts_path(
+            self.logger.experiment, self.logger.run_id
+        )
+
+        output_path = artifacts_path / f"{datetime.now()}.txt"
+
         output_path.write_text(text)
 
     def configure_optimizers(self):
         """Configure optimizers.
 
         Necessary for pytorch-lightning.
+
+        Returns
+        -------
+        optimizer : Optimizer
+            The chosen optimizer.
         """
         optimizer = torch.optim.Adam(self.parameters(), lr=1e-3)
 
@@ -498,12 +593,87 @@ def run_train(
     hidden_size=32,
     dense_size=32,
     n_layers=1,
+    path_output=None,
     use_mlflow=True,
     early_stopping=True,
     gpus=None,
 ):
+    """Run the training loop.
+
+    Note that the parameters are also explained in the cli of `mlt train`.
+
+    Paramaters
+    ----------
+    texts : list
+        List of str representing all texts we would like to train on.
+
+    name : str
+        Name of the model. This name is only used when we save the model -
+        it is not hardcoded anywhere in the serialization.
+
+    max_epochs : int
+        Maximum number of epochs. Note that the number of actual epochs
+        can be lower if we activate the `early_stopping` flag.
+
+    window_size : int
+        Number of previous characters to consider when predicting the next
+        character. The higher the number the longer the memory we are
+        enforcing. Howerever, at the same time, the training becomes slower.
+
+    batch_size : int
+        Number of samples in one batch.
+
+    vocab_size : int
+        Maximum number of characters to be put in the vocabulary. Note that
+        one can explicityly exclude characters via `illegal_chars`. The higher
+        this number the bigger the feature vectors are and the slower the
+        training.
+
+    fill_strategy : str, {"zeros", "skip"}
+        Determines how to deal with out of vocabulary characters. When
+        "zeros" then we simply encode them as zero vectors. If "skip", we
+        skip a given sample if any of the characters in the window or the
+        predicted character are not in the vocabulary.
+
+    illegal_chars : str or None
+        If specified, then each character of the str represents a forbidden
+        character that we do not put in the vocabulary.
+
+    train_test_split : float
+        Float in the range (0, 1) representing the percentage of the training
+        set with respect to the entire dataset.
+
+    hidden_size : int
+        Hidden size of LSTM cells (equal in all layers).
+
+    dense_size : int
+        Size of the dense layer that is bridging the hidden state outputted
+        by the LSTM and the final output probabilities over the vocabulary.
+
+    n_layers : int
+        Number of layers inside of the LSTM.
+
+    path_output : None or pathlib.Path or str
+        If specified, it is an alternative output folder when the trained
+        models and logging information will be stored. If not specified
+        the output folder is by default set to `~/.mltype`.
+
+    use_mlflow : bool
+        If active, than we use mlflow for logging of training and validation
+        loss. Additionally, at the end of each epoch we generate a few
+        sample texts to demonstrate how good/bad the current network is.
+
+    early_stopping : bool
+        If True, then we monitor the validation loss and if it does not
+        improve for a certain number of epochs then we stop the traning.
+
+    gpus : int or None
+        If None or 0, no GPUs are used (only CPUs). Otherwise, it represents
+        the number of GPUs to be used (using the data parallelization
+        strategy).
+    """
     illegal_chars = illegal_chars or ""
-    output_path = get_cache_dir() / "languages" / name
+    output_path = get_cache_dir(path_output) / "languages" / name
 
     if output_path.exists():
         raise FileExistsError(f"The model {name} already exists")
@@ -568,8 +738,10 @@ def run_train(
     if use_mlflow:
         print("Logging with MLflow")
         logger = pl.loggers.MLFlowLogger(
-            "mltype", save_dir=get_cache_dir() / "logs" / "mlruns"
+            "mltype", save_dir=get_cache_dir(path_output) / "logs" / "mlruns"
         )
+        print(f"Run ID: {logger.run_id}")
+
         logger.log_hyperparams(
             {
                 "fill_strategy": fill_strategy,
