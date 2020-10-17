@@ -7,9 +7,11 @@ import torch
 
 from mltype.ml import (
     SingleCharacterLSTM,
+    LanguageDataset,
     create_data_language,
     load_model,
     sample_char,
+    sample_text,
     save_model,
     text2features
 )
@@ -149,6 +151,54 @@ class TestSampleChar:
         assert ch == "b"
         assert h == "h"
         assert c == "c"
+
+class TestSampleText:
+    @pytest.mark.parametrize("n_chars", [0, 2, 5])
+    def test_overall(self, monkeypatch, n_chars):
+        fake_sample_char = Mock()
+        fake_sample_char.return_value = "b", None, None
+        fake_tqdm = Mock()
+        fake_tqdm.tqdm.side_effect = lambda x: x
+
+        monkeypatch.setattr("mltype.ml.sample_char", fake_sample_char)
+        monkeypatch.setattr("mltype.ml.tqdm", fake_tqdm)
+
+        res = sample_text(n_chars,
+                          Mock(spec=torch.nn.Module),
+                          ["a"],
+                          random_state=1,
+                          verbose=True)
+
+        assert res == n_chars * "b"
+
+class TestLanguageDataset:
+    def test_overall(self):
+        vocabulary = ["a", "b", "c"]
+        window_size = 3
+
+        X = np.array([[0, 0, 3], [1, 0, 2]], dtype=np.int8)
+        y = np.array([2, 0], dtype=np.int8)
+        transform = lambda x,y: (x,y)
+
+        ld = LanguageDataset(X, y, vocabulary, transform=transform)
+
+        assert len(ld) == 2
+
+        X_sample, y_sample, vocabulary_ = ld[0]
+
+        X_sample_true = np.array(
+            [
+                [1, 0, 0],
+                [1, 0, 0],
+                [0, 0, 0]
+
+        ], dtype=np.float32)
+
+        y_sample_true = np.array([0, 0, 1], dtype=np.float32)
+
+        assert vocabulary_ == vocabulary
+        np.testing.assert_array_equal(X_sample, X_sample_true)
+        np.testing.assert_array_equal(y_sample, y_sample_true)
 
 class TestSingleCharacterLSTM:
     def test_basic(self, tmpdir):

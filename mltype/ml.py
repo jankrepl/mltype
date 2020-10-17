@@ -285,12 +285,40 @@ def sample_text(
 
 
 class LanguageDataset(torch.utils.data.Dataset):
-    """Language dataset."""
+    """Language dataset.
 
-    def __init__(self, X, y, indices=None, vocabulary=None, transform=None):
+    All the inputs of this class should be generated via
+    `create_data_language`.
+
+    Parameters
+    ----------
+    X : np.ndarray
+        Array of shape (n_samples, window_size) of dtype `np.int8`.
+        It represents the features.
+
+    y : np.ndarray
+        Array of shape (n_samples,) of dtype `np.int8`.
+        It represents the targets
+
+    vocabulary : list
+        List of characters in the vocabulary.
+
+    transform : callable or None
+        Some callable that inputs `X` and `y` and returns some
+        modified instances of them.
+
+    Attributes
+    ----------
+    ohv_matrix : np.ndarray
+        Matrix of shape `(vocab_size + 1, vocab_size)`. The submatrix
+        `ohv_matrix[:vocab_size, :]` is an identity matrix and is used
+        for fast creation of one hot vectors. The last row of `ohv_matrix`
+        is a zero vector and is used for encoding out-of-vocabulary characters.
+    """
+
+    def __init__(self, X, y, vocabulary, transform=None):
         self.X = X
         self.y = y
-        self.indices = indices
         self.vocabulary = vocabulary
         self.transform = transform
 
@@ -305,9 +333,34 @@ class LanguageDataset(torch.utils.data.Dataset):
         )
 
     def __len__(self):
+        """Compute the number of samples."""
         return len(self.X)
 
     def __getitem__(self, ix):
+        """Get a single sample.
+
+        Parameters
+        ----------
+        ix : int
+            Index od the sample.
+
+        Returns
+        -------
+        X_sample : np.ndarray
+            Array of shape `(window_size, vocab_size)` where each
+            row is either an one hot vector (inside of vocabulary character) or
+            a zero vector (out of vocabulary character).
+
+        y_sample : np.ndarray
+            Array of shape `(vocab_size,)` representing either the one hot
+            encoding of the character to be predicted (inside of vocabulary
+            character) or a zero vector (out of vocabulary character).
+
+        vocabulary : list
+            The vocabulary. The reason why we want to provide this too
+            is to have access to it during validation.
+        """
+
         X_sample = torch.from_numpy(self.ohv_matrix[self.X[ix]])
         y_sample = torch.from_numpy(self.ohv_matrix[self.y[ix]])
 
