@@ -345,7 +345,13 @@ class TestRunTrain:
     @pytest.mark.parametrize("use_mlflow", [True, False])
     @pytest.mark.parametrize("illegal_chars", [None, "z"])
     def test_overall(
-        self, monkeypatch, tmpdir, illegal_chars, use_mlflow, early_stopping
+        self,
+        monkeypatch,
+        capsys,
+        tmpdir,
+        illegal_chars,
+        use_mlflow,
+        early_stopping,
     ):
         tmpdir_ = pathlib.Path(str(tmpdir))
         window_size = 1
@@ -357,10 +363,39 @@ class TestRunTrain:
             name,
             early_stopping=early_stopping,
             illegal_chars=illegal_chars,
-            max_epochs=1,
+            max_epochs=2,
             path_output=tmpdir_,
             use_mlflow=use_mlflow,
             window_size=window_size,
         )
 
+        captured = capsys.readouterr()
+        assert "Using the checkpoint " in captured.out
+
+        checkpoints_dir = tmpdir_ / "checkpoints" / name
+        assert checkpoints_dir.exists()
+        checkpoints = set([x.name for x in checkpoints_dir.iterdir()])
+        assert len(checkpoints) == 2  # best and last
+        assert "last.ckpt" in checkpoints
+
         assert (tmpdir_ / "languages" / name).exists()
+        assert (not use_mlflow) ^ (tmpdir_ / "logs" / "mlruns").exists()
+
+    def test_zero_epochs(self, tmpdir, capsys):
+        tmpdir_ = pathlib.Path(str(tmpdir))
+        window_size = 1
+        texts = ["abcd", "yxz"]
+        name = "test_model"
+
+        run_train(
+            texts,
+            name,
+            max_epochs=0,
+            path_output=tmpdir_,
+            window_size=window_size,
+        )
+
+        captured = capsys.readouterr()
+        assert "No checkpoint found" in captured.out
+        checkpoints_dir = tmpdir_ / "checkpoints" / name
+        assert not checkpoints_dir.exists()

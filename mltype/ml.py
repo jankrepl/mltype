@@ -673,7 +673,10 @@ def run_train(
         strategy).
     """
     illegal_chars = illegal_chars or ""
-    output_path = get_cache_dir(path_output) / "languages" / name
+
+    cache_dir = get_cache_dir(path_output)
+    output_path = cache_dir / "languages" / name
+    checkpoint_path = cache_dir / "checkpoints" / name
 
     if output_path.exists():
         raise FileExistsError(f"The model {name} already exists")
@@ -734,6 +737,17 @@ def run_train(
         dense_size=dense_size,
         n_layers=n_layers,
     )
+    chp_name_template = str(checkpoint_path / "{epoch}-{val_loss:.3f}")
+    chp_callback = pl.callbacks.ModelCheckpoint(
+        filepath=chp_name_template,
+        save_last=True,  # last epoch always there
+        save_top_k=1,
+        verbose=True,
+        monitor="val_loss",
+        mode="min",
+        save_weights_only=False,
+    )
+    callbacks = []
 
     if use_mlflow:
         print("Logging with MLflow")
@@ -756,11 +770,9 @@ def run_train(
 
     if early_stopping:
         print("Activating early stopping")
-        callbacks = [
+        callbacks.append(
             pl.callbacks.EarlyStopping(monitor="val_loss", verbose=True)
-        ]
-    else:
-        callbacks = []
+        )
 
     with print_section(" Training ", drop_end=True):
         trainer = pl.Trainer(
@@ -768,11 +780,20 @@ def run_train(
             max_epochs=max_epochs,
             logger=logger,
             callbacks=callbacks,
+            checkpoint_callback=chp_callback,
         )
         trainer.fit(network, dataloader_t, dataloader_v)
 
     with print_section(" Saving the model ", drop_end=False):
-        print(output_path)
+        if chp_callback.best_model_path:
+            print(f"Using the checkpoint {chp_callback.best_model_path}")
+            network = SingleCharacterLSTM.load_from_checkpoint(
+                chp_callback.best_model_path
+            )
+        else:
+            print("No checkpoint found, using the current network")
+
+        print(f"The final model is saved to: {output_path}")
         save_model(network, vocabulary, output_path)
 
 
@@ -814,7 +835,8 @@ def save_model(model, vocabulary, path):
 
     Note that we require that the model has a property `hparams` that
     we can unpack into the constructor of the class and get the same
-    network architecture.
+    network architecture. This is automatically the case if we subclass
+    from `pl.LightningModule`.
 
     Parameters
     ----------
