@@ -385,9 +385,6 @@ def random(
 
     from mltype.interactive import main_basic
 
-    if not characters:
-        raise ValueError("No characters were provided")
-
     c = Counter(characters)
     vocabulary = list(c.keys())
     counts = np.array([c[x] for x in vocabulary])

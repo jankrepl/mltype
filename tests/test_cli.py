@@ -78,6 +78,56 @@ def test_ls(tmpdir, monkeypatch):
 
 @pytest.mark.parametrize("force_perfect", [True, False])
 @pytest.mark.parametrize("instant_death", [True, False])
+@pytest.mark.parametrize("n_chars", [34, 52])
+@pytest.mark.parametrize("output_file", ["some/path", "other/path"])
+@pytest.mark.parametrize("use_long", [True, False])
+@pytest.mark.parametrize("target_wpm", [33, 55])
+def test_random(
+    tmpdir,
+    monkeypatch,
+    force_perfect,
+    instant_death,
+    n_chars,
+    output_file,
+    use_long,
+    target_wpm,
+):
+    raw = getattr(mltype.cli.cli, "random")
+
+    fake_main_basic = Mock()
+    monkeypatch.setattr("mltype.interactive.main_basic", fake_main_basic)
+
+    runner = CliRunner()
+    options = [
+        ("f", "force-perfect", force_perfect),
+        ("i", "instant-death", instant_death),
+        ("n", "n-chars", n_chars),
+        ("o", "output-file", output_file),
+        ("t", "target-wpm", target_wpm),
+    ]
+
+    command = command_composer(("abc",), options, use_long=use_long)
+    print(command)  # to know why it failed
+
+    result = runner.invoke(raw, command)
+
+    assert result.exit_code == 0
+    fake_main_basic.assert_called_once()
+
+    call = fake_main_basic.call_args
+
+    assert set(call.args[0]).issubset(set("abc"))
+
+    assert call.kwargs == {
+        "force_perfect": force_perfect,
+        "instant_death": instant_death,
+        "output_file": output_file,
+        "target_wpm": target_wpm,
+    }
+
+
+@pytest.mark.parametrize("force_perfect", [True, False])
+@pytest.mark.parametrize("instant_death", [True, False])
 @pytest.mark.parametrize("output_file", ["some/path", "other/path"])
 @pytest.mark.parametrize("raw_string", [True, False])
 @pytest.mark.parametrize("use_long", [True, False])
