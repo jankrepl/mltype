@@ -593,7 +593,8 @@ def run_train(
     hidden_size=32,
     dense_size=32,
     n_layers=1,
-    path_output=None,
+    checkpoint_path=None,
+    output_path=None,
     use_mlflow=True,
     early_stopping=True,
     gpus=None,
@@ -653,7 +654,12 @@ def run_train(
     n_layers : int
         Number of layers inside of the LSTM.
 
-    path_output : None or pathlib.Path or str
+    checkpoint_path : None or pathlib.Path or str
+        If specified, it is pointing to a checkpoint file (generated
+        by Pytorch-lightning). This file does not contain the vocabulary.
+        It can be used to continue the training.
+
+    output_path : None or pathlib.Path or str
         If specified, it is an alternative output folder when the trained
         models and logging information will be stored. If not specified
         the output folder is by default set to `~/.mltype`.
@@ -673,9 +679,12 @@ def run_train(
         strategy).
     """
     illegal_chars = illegal_chars or ""
-    output_path = get_cache_dir(path_output) / "languages" / name
 
-    if output_path.exists():
+    cache_dir = get_cache_dir(output_path)
+    languages_path = cache_dir / "languages" / name
+    checkpoints_path = cache_dir / "checkpoints" / name
+
+    if languages_path.exists():
         raise FileExistsError(f"The model {name} already exists")
 
     with print_section(" Computing vocabulary ", drop_end=True):
@@ -728,17 +737,33 @@ def run_train(
         sampler=torch.utils.data.SubsetRandomSampler(val_indices),
     )
 
-    network = SingleCharacterLSTM(
-        vocab_size,
-        hidden_size=hidden_size,
-        dense_size=dense_size,
-        n_layers=n_layers,
+    if checkpoint_path is None:
+        network = SingleCharacterLSTM(
+            vocab_size,
+            hidden_size=hidden_size,
+            dense_size=dense_size,
+            n_layers=n_layers,
+        )
+    else:
+        print(f"Loading a checkpointed network: {checkpoint_path}")
+        network = SingleCharacterLSTM.load_from_checkpoint(str(checkpoint_path))
+
+    chp_name_template = str(checkpoints_path / "{epoch}-{val_loss:.3f}")
+    chp_callback = pl.callbacks.ModelCheckpoint(
+        filepath=chp_name_template,
+        save_last=True,  # last epoch always there
+        save_top_k=1,
+        verbose=True,
+        monitor="val_loss",
+        mode="min",
+        save_weights_only=False,
     )
+    callbacks = []
 
     if use_mlflow:
         print("Logging with MLflow")
         logger = pl.loggers.MLFlowLogger(
-            "mltype", save_dir=get_cache_dir(path_output) / "logs" / "mlruns"
+            "mltype", save_dir=get_cache_dir(output_path) / "logs" / "mlruns"
         )
         print(f"Run ID: {logger.run_id}")
 
@@ -756,11 +781,9 @@ def run_train(
 
     if early_stopping:
         print("Activating early stopping")
-        callbacks = [
+        callbacks.append(
             pl.callbacks.EarlyStopping(monitor="val_loss", verbose=True)
-        ]
-    else:
-        callbacks = []
+        )
 
     with print_section(" Training ", drop_end=True):
         trainer = pl.Trainer(
@@ -768,12 +791,21 @@ def run_train(
             max_epochs=max_epochs,
             logger=logger,
             callbacks=callbacks,
+            checkpoint_callback=chp_callback,
         )
         trainer.fit(network, dataloader_t, dataloader_v)
 
     with print_section(" Saving the model ", drop_end=False):
-        print(output_path)
-        save_model(network, vocabulary, output_path)
+        if chp_callback.best_model_path:
+            print(f"Using the checkpoint {chp_callback.best_model_path}")
+            network = SingleCharacterLSTM.load_from_checkpoint(
+                chp_callback.best_model_path
+            )
+        else:
+            print("No checkpoint found, using the current network")
+
+        print(f"The final model is saved to: {languages_path}")
+        save_model(network, vocabulary, languages_path)
 
 
 def load_model(path):
@@ -814,7 +846,8 @@ def save_model(model, vocabulary, path):
 
     Note that we require that the model has a property `hparams` that
     we can unpack into the constructor of the class and get the same
-    network architecture.
+    network architecture. This is automatically the case if we subclass
+    from `pl.LightningModule`.
 
     Parameters
     ----------

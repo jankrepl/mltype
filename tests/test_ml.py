@@ -339,13 +339,19 @@ class TestRunTrain:
         model_path.touch()
 
         with pytest.raises(FileExistsError):
-            run_train(["some text"], "a", path_output=tmpdir_)
+            run_train(["some text"], "a", output_path=tmpdir_)
 
     @pytest.mark.parametrize("early_stopping", [True, False])
     @pytest.mark.parametrize("use_mlflow", [True, False])
     @pytest.mark.parametrize("illegal_chars", [None, "z"])
     def test_overall(
-        self, monkeypatch, tmpdir, illegal_chars, use_mlflow, early_stopping
+        self,
+        monkeypatch,
+        capsys,
+        tmpdir,
+        illegal_chars,
+        use_mlflow,
+        early_stopping,
     ):
         tmpdir_ = pathlib.Path(str(tmpdir))
         window_size = 1
@@ -357,10 +363,72 @@ class TestRunTrain:
             name,
             early_stopping=early_stopping,
             illegal_chars=illegal_chars,
-            max_epochs=1,
-            path_output=tmpdir_,
+            max_epochs=2,
+            output_path=tmpdir_,
             use_mlflow=use_mlflow,
             window_size=window_size,
         )
 
+        captured = capsys.readouterr()
+        assert "Using the checkpoint " in captured.out
+
+        checkpoints_dir = tmpdir_ / "checkpoints" / name
+        assert checkpoints_dir.exists()
+        checkpoints = set([x.name for x in checkpoints_dir.iterdir()])
+        assert len(checkpoints) == 2  # best and last
+        assert "last.ckpt" in checkpoints
+
         assert (tmpdir_ / "languages" / name).exists()
+        assert (not use_mlflow) ^ (tmpdir_ / "logs" / "mlruns").exists()
+
+    def test_zero_epochs(self, tmpdir, capsys):
+        tmpdir_ = pathlib.Path(str(tmpdir))
+        window_size = 1
+        texts = ["abcd", "yxz"]
+        name = "test_model"
+
+        run_train(
+            texts,
+            name,
+            max_epochs=0,
+            output_path=tmpdir_,
+            window_size=window_size,
+        )
+
+        captured = capsys.readouterr()
+        assert "No checkpoint found" in captured.out
+        checkpoints_dir = tmpdir_ / "checkpoints" / name
+        assert not checkpoints_dir.exists()
+
+    def test_checkpoint(self, tmpdir, capsys):
+        tmpdir_ = pathlib.Path(str(tmpdir))
+        window_size = 1
+        texts = ["abcd", "yxz"]
+        name = "test_model"
+
+        run_train(
+            texts,
+            name,
+            max_epochs=1,
+            output_path=tmpdir_,
+            window_size=window_size,
+        )
+
+        chp_message = "Loading a checkpointed network"
+        captured = capsys.readouterr()
+
+        assert chp_message not in captured.out
+
+        checkpoints_dir = tmpdir_ / "checkpoints" / name
+
+        run_train(
+            texts,
+            name + "_cont",
+            max_epochs=0,
+            output_path=tmpdir_,
+            checkpoint_path=checkpoints_dir / "last.ckpt",
+            window_size=window_size,
+        )
+
+        captured = capsys.readouterr()
+        assert chp_message in captured.out
