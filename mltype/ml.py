@@ -154,6 +154,7 @@ def sample_char(
     previous_char=None,
     random_state=None,
     top_k=None,
+    device=None,
 ):
     """Sample a character given network probability prediciton (with a state).
 
@@ -181,11 +182,16 @@ def sample_char(
         If specified, we only sample from the top k most probably characters.
         Otherwise all of them.
 
+    device : None or torch.device
+        By default `torch.device("cpu")`.
+
     Returns
     -------
     ch : str
         A character from the vocabulary.
     """
+    device = device or torch.device("cpu")
+
     if previous_char:
         if len(previous_char) != 1:
             raise ValueError("One can only provide a single character")
@@ -201,9 +207,9 @@ def sample_char(
     if random_state is not None:
         np.random.seed(random_state)
 
-    x = torch.from_numpy(features).to(torch.float32)
+    x = torch.from_numpy(features).to(dtype=torch.float32, device=device)
     out, h_n, c_n = network(x, h, c)
-    probs = out[0].detach().numpy()
+    probs = out[0].detach().cpu().numpy()
 
     if top_k is not None:
         probs_new = np.zeros_like(probs)
@@ -223,6 +229,7 @@ def sample_text(
     random_state=None,
     top_k=None,
     verbose=False,
+    device=None,
 ):
     """Sample text by unrolling character by character predictions.
 
@@ -253,11 +260,15 @@ def sample_text(
     verbose : bool
             Controls verbosity.
 
+    device : None or torch.device
+        By default `torch.device("cpu")`.
+
     Returns
     -------
     text : str
             Generated text of length `n_chars + len(initial_text)`.
     """
+    device = device or torch.device("cpu")
     network.eval()
     res = initial_text or ""
     h, c = None, None
@@ -278,6 +289,7 @@ def sample_text(
             c=c,
             previous_char=previous_char,
             top_k=top_k,
+            device=device,
         )
         res += new_ch
 
@@ -553,7 +565,8 @@ class SingleCharacterLSTM(pl.LightningModule):
         n_chars = 100
 
         lines = [
-            sample_text(n_chars, self, vocabulary) for _ in range(n_samples)
+            sample_text(n_chars, self, vocabulary, device=self.device)
+            for _ in range(n_samples)
         ]
         text = "\n".join(lines)
 
@@ -820,12 +833,13 @@ def load_model(path):
     Returns
     -------
     model_inst : SingleCharacterLSTM
-            Instance of the model.
+            Instance of the model. Note that all of its parameters
+            will be lying on a CPU.
 
     vocabulary : list
             Corresponding vocabulary.
     """
-    output_dict = torch.load(path)
+    output_dict = torch.load(path, map_location=torch.device("cpu"))
 
     kwargs = output_dict["kwargs"]
     model_class_name = output_dict["model_class_name"]
