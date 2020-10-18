@@ -339,7 +339,7 @@ class TestRunTrain:
         model_path.touch()
 
         with pytest.raises(FileExistsError):
-            run_train(["some text"], "a", path_output=tmpdir_)
+            run_train(["some text"], "a", output_path=tmpdir_)
 
     @pytest.mark.parametrize("early_stopping", [True, False])
     @pytest.mark.parametrize("use_mlflow", [True, False])
@@ -364,7 +364,7 @@ class TestRunTrain:
             early_stopping=early_stopping,
             illegal_chars=illegal_chars,
             max_epochs=2,
-            path_output=tmpdir_,
+            output_path=tmpdir_,
             use_mlflow=use_mlflow,
             window_size=window_size,
         )
@@ -391,7 +391,7 @@ class TestRunTrain:
             texts,
             name,
             max_epochs=0,
-            path_output=tmpdir_,
+            output_path=tmpdir_,
             window_size=window_size,
         )
 
@@ -399,3 +399,36 @@ class TestRunTrain:
         assert "No checkpoint found" in captured.out
         checkpoints_dir = tmpdir_ / "checkpoints" / name
         assert not checkpoints_dir.exists()
+
+    def test_checkpoint(self, tmpdir, capsys):
+        tmpdir_ = pathlib.Path(str(tmpdir))
+        window_size = 1
+        texts = ["abcd", "yxz"]
+        name = "test_model"
+
+        run_train(
+            texts,
+            name,
+            max_epochs=1,
+            output_path=tmpdir_,
+            window_size=window_size,
+        )
+
+        chp_message = "Loading a checkpointed network"
+        captured = capsys.readouterr()
+
+        assert chp_message not in captured.out
+
+        checkpoints_dir = tmpdir_ / "checkpoints" / name
+
+        run_train(
+            texts,
+            name + "_cont",
+            max_epochs=0,
+            output_path=tmpdir_,
+            checkpoint_path=checkpoints_dir / "last.ckpt",
+            window_size=window_size,
+        )
+
+        captured = capsys.readouterr()
+        assert chp_message in captured.out

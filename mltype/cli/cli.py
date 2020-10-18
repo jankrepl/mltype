@@ -159,6 +159,12 @@ def ls():
     show_default=True,
 )
 @click.option(
+    "-c",
+    "--checkpoint-path",
+    type=click.Path(),
+    help="Load a checkpoint and continue training it",
+)
+@click.option(
     "-d",
     "--dense-size",
     type=int,
@@ -227,8 +233,8 @@ def ls():
     show_default=True,
 )
 @click.option(
-    "-p",
-    "--path-output",
+    "-o",
+    "--output-path",
     type=click.Path(),
     help="Custom path where to save the trained models and logging details. "
     "If not provided it defaults to `~/.mltype`.",
@@ -267,6 +273,7 @@ def ls():
 def train(
     path,
     model_name,
+    checkpoint_path,
     extensions,
     fill_strategy,
     illegal_chars,
@@ -277,7 +284,7 @@ def train(
     max_epochs,
     early_stopping,
     n_layers,
-    path_output,
+    output_path,
     train_test_split,
     use_mlflow,
     vocab_size,
@@ -331,7 +338,8 @@ def train(
         use_mlflow=use_mlflow,
         early_stopping=early_stopping,
         gpus=gpus,
-        path_output=path_output,
+        checkpoint_path=checkpoint_path,
+        output_path=output_path,
     )
     print("Done")
 

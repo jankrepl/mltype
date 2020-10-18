@@ -593,7 +593,8 @@ def run_train(
     hidden_size=32,
     dense_size=32,
     n_layers=1,
-    path_output=None,
+    checkpoint_path=None,
+    output_path=None,
     use_mlflow=True,
     early_stopping=True,
     gpus=None,
@@ -653,7 +654,12 @@ def run_train(
     n_layers : int
         Number of layers inside of the LSTM.
 
-    path_output : None or pathlib.Path or str
+    checkpoint_path : None or pathlib.Path or str
+        If specified, it is pointing to a checkpoint file (generated
+        by Pytorch-lightning). This file does not contain the vocabulary.
+        It can be used to continue the training.
+
+    output_path : None or pathlib.Path or str
         If specified, it is an alternative output folder when the trained
         models and logging information will be stored. If not specified
         the output folder is by default set to `~/.mltype`.
@@ -674,11 +680,11 @@ def run_train(
     """
     illegal_chars = illegal_chars or ""
 
-    cache_dir = get_cache_dir(path_output)
-    output_path = cache_dir / "languages" / name
-    checkpoint_path = cache_dir / "checkpoints" / name
+    cache_dir = get_cache_dir(output_path)
+    languages_path = cache_dir / "languages" / name
+    checkpoints_path = cache_dir / "checkpoints" / name
 
-    if output_path.exists():
+    if languages_path.exists():
         raise FileExistsError(f"The model {name} already exists")
 
     with print_section(" Computing vocabulary ", drop_end=True):
@@ -731,13 +737,18 @@ def run_train(
         sampler=torch.utils.data.SubsetRandomSampler(val_indices),
     )
 
-    network = SingleCharacterLSTM(
-        vocab_size,
-        hidden_size=hidden_size,
-        dense_size=dense_size,
-        n_layers=n_layers,
-    )
-    chp_name_template = str(checkpoint_path / "{epoch}-{val_loss:.3f}")
+    if checkpoint_path is None:
+        network = SingleCharacterLSTM(
+            vocab_size,
+            hidden_size=hidden_size,
+            dense_size=dense_size,
+            n_layers=n_layers,
+        )
+    else:
+        print(f"Loading a checkpointed network: {checkpoint_path}")
+        network = SingleCharacterLSTM.load_from_checkpoint(str(checkpoint_path))
+
+    chp_name_template = str(checkpoints_path / "{epoch}-{val_loss:.3f}")
     chp_callback = pl.callbacks.ModelCheckpoint(
         filepath=chp_name_template,
         save_last=True,  # last epoch always there
@@ -752,7 +763,7 @@ def run_train(
     if use_mlflow:
         print("Logging with MLflow")
         logger = pl.loggers.MLFlowLogger(
-            "mltype", save_dir=get_cache_dir(path_output) / "logs" / "mlruns"
+            "mltype", save_dir=get_cache_dir(output_path) / "logs" / "mlruns"
         )
         print(f"Run ID: {logger.run_id}")
 
@@ -793,8 +804,8 @@ def run_train(
         else:
             print("No checkpoint found, using the current network")
 
-        print(f"The final model is saved to: {output_path}")
-        save_model(network, vocabulary, output_path)
+        print(f"The final model is saved to: {languages_path}")
+        save_model(network, vocabulary, languages_path)
 
 
 def load_model(path):
