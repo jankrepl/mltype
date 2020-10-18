@@ -820,12 +820,13 @@ def load_model(path):
     Returns
     -------
     model_inst : SingleCharacterLSTM
-            Instance of the model.
+            Instance of the model. Note that all of its parameters
+            will be lying on a CPU.
 
     vocabulary : list
             Corresponding vocabulary.
     """
-    output_dict = torch.load(path)
+    output_dict = torch.load(path, map_location=torch.device("cpu"))
 
     kwargs = output_dict["kwargs"]
     model_class_name = output_dict["model_class_name"]
