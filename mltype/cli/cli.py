@@ -13,7 +13,6 @@ warnings.filterwarnings("ignore")
 @click.group()
 def cli():
     """Tool for improving typing speed and accuracy."""
-    pass
 
 
 @cli.command()
@@ -374,7 +373,7 @@ def train(
 )
 @click.option(
     "-t",
-    "--target_wpm",
+    "--target-wpm",
     type=int,
     help="The desired speed to be shown as a guide",
 )
@@ -434,7 +433,7 @@ def random(
 )
 @click.option(
     "-t",
-    "--target_wpm",
+    "--target-wpm",
     type=int,
     help="The desired speed to be shown as a guide",
 )
@@ -474,7 +473,7 @@ def raw(
 )
 @click.option(
     "-t",
-    "--target_wpm",
+    "--target-wpm",
     type=int,
     help="The desired speed to be shown as a guide",
 )
@@ -540,7 +539,7 @@ def replay(replay_file, force_perfect, instant_death, overwrite, target_wpm):
 )
 @click.option(
     "-t",
-    "--target_wpm",
+    "--target-wpm",
     type=int,
     help="The desired speed to be shown as a guide",
 )
