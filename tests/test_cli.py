@@ -163,7 +163,6 @@ def test_ls(tmpdir, monkeypatch):
 @pytest.mark.parametrize("use_long", [True, False])
 @pytest.mark.parametrize("target_wpm", [33, 55])
 def test_random(
-    tmpdir,
     monkeypatch,
     force_perfect,
     instant_death,
@@ -213,7 +212,6 @@ def test_random(
 @pytest.mark.parametrize("use_long", [True, False])
 @pytest.mark.parametrize("target_wpm", [33, 55])
 def test_raw(
-    tmpdir,
     monkeypatch,
     force_perfect,
     instant_death,
@@ -260,7 +258,6 @@ def test_raw(
 @pytest.mark.parametrize("use_long", [True, False])
 @pytest.mark.parametrize("target_wpm", [33, 55])
 def test_replay(
-    tmpdir,
     monkeypatch,
     force_perfect,
     instant_death,
@@ -307,7 +304,6 @@ def test_replay(
 @pytest.mark.parametrize("use_long", [True, False])
 @pytest.mark.parametrize("target_wpm", [33, 55])
 def test_sample(
-    tmpdir,
     monkeypatch,
     force_perfect,
     instant_death,
