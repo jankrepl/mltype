@@ -19,7 +19,7 @@ def cli():
 @click.argument("path", type=click.File("r"))
 @click.option(
     "-e",
-    "--end_line",
+    "--end-line",
     type=int,
     help="The end line of the excerpt to use. Needs to be used together with "
     "start-line.",
@@ -38,7 +38,7 @@ def cli():
 )
 @click.option(
     "-l",
-    "--n_lines",
+    "--n-lines",
     type=int,
     help="Number of consecutive lines to be selected at random. Cannot be "
     "used together with start-line and end-line.",
@@ -52,7 +52,7 @@ def cli():
 @click.option("-r", "--random-state", type=int)
 @click.option(
     "-s",
-    "--start_line",
+    "--start-line",
     type=int,
     help="the start line of the excerpt to use. needs to be used together "
     "with end-line.",

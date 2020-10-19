@@ -26,7 +26,7 @@ def command_composer(args, options, use_long=True):
 
     elements = []
     for short_op, long_op, v in options:
-        if v is False:
+        if v is False or v is None:
             continue
 
         dash = "--" if use_long else "-"
@@ -50,6 +50,86 @@ def test_help(cmd):
 
     assert result.exit_code == 0
 
+@pytest.mark.parametrize("end_line", [None, 5, 10])
+@pytest.mark.parametrize("force_perfect", [True])
+@pytest.mark.parametrize("include_whitespace", [False])
+@pytest.mark.parametrize("instant_death", [True])
+@pytest.mark.parametrize("n_lines", [None, 4])
+@pytest.mark.parametrize("output_file", ["other/path"])
+@pytest.mark.parametrize("random_state", [None, 7])
+@pytest.mark.parametrize("start_line", [None, 9])
+@pytest.mark.parametrize("use_long", [True, False])
+@pytest.mark.parametrize("target_wpm", [33, 55])
+def test_file(
+    tmpdir,
+    monkeypatch,
+    end_line,
+    force_perfect,
+    include_whitespace,
+    instant_death,
+    n_lines,
+    output_file,
+    random_state,
+    start_line,
+    use_long,
+    target_wpm,
+):
+    file_path = pathlib.Path(str(tmpdir)) / "texts.txt"
+    file_path.write_text("\n".join(30 * ["sds"]))
+
+    file_ = getattr(mltype.cli.cli, "file")
+
+    fake_main_basic = Mock()
+    monkeypatch.setattr("mltype.interactive.main_basic", fake_main_basic)
+
+    runner = CliRunner()
+    options = [
+        ("e", "end-line", end_line),
+        ("f", "force-perfect", force_perfect),
+        ("i", "instant-death", instant_death),
+        ("l", "n-lines", n_lines),
+        ("o", "output-file", output_file),
+        ("r", "random-state", random_state),
+        ("s", "start-line", start_line),
+        ("t", "target-wpm", target_wpm),
+        ("w", "include-whitespace", include_whitespace)
+    ]
+
+    command = command_composer((str(file_path),), options, use_long=use_long)
+    print(command)  # to know why it failed
+
+    result = runner.invoke(file_, command)
+
+    mode_exact = start_line is not None and end_line is not None
+    mode_random = n_lines is not None
+
+    if not (mode_exact ^ mode_random):
+        assert result.exit_code != 0
+        return
+
+    if mode_exact:
+        if random_state is not None:
+            assert result.exit_code != 0
+            return
+
+        if start_line >= end_line:
+            assert result.exit_code != 0
+            return
+
+    print(result.output)
+    assert result.exit_code == 0
+    fake_main_basic.assert_called_once()
+
+    call = fake_main_basic.call_args
+
+    assert isinstance(call.args[0], str)
+
+    assert call.kwargs == {
+        "force_perfect": force_perfect,
+        "instant_death": instant_death,
+        "output_file": output_file,
+        "target_wpm": target_wpm,
+    }
 
 def test_ls(tmpdir, monkeypatch):
     ls = getattr(mltype.cli.cli, "ls")
