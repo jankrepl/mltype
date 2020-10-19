@@ -131,12 +131,15 @@ def test_file(
         "target_wpm": target_wpm,
     }
 
-def test_ls(tmpdir, monkeypatch):
+@pytest.mark.parametrize("dir_exists", [True, False])
+def test_ls(tmpdir, monkeypatch, dir_exists):
     ls = getattr(mltype.cli.cli, "ls")
 
     new_home = pathlib.Path(str(tmpdir))
     path_languages = new_home / ".mltype" / "languages"
-    path_languages.mkdir(parents=True)
+
+    if dir_exists:
+        path_languages.mkdir(parents=True)
 
     monkeypatch.setenv("HOME", str(new_home))
 
@@ -145,6 +148,9 @@ def test_ls(tmpdir, monkeypatch):
 
     assert result.exit_code == 0
     assert result.output == ""
+
+    if not dir_exists:
+        return
 
     (path_languages / "a").touch()
     (path_languages / "b").touch()
@@ -371,4 +377,105 @@ def test_sample(
         "instant_death": instant_death,
         "output_file": output_file,
         "target_wpm": target_wpm}
+
+@pytest.mark.parametrize("batch_size", [34])
+@pytest.mark.parametrize("checkpoint_path", [None, "some_path"])
+@pytest.mark.parametrize("dense_size", [30])
+@pytest.mark.parametrize("extensions", [None, ".py"])
+@pytest.mark.parametrize("fill_strategy", ["zeros"])
+@pytest.mark.parametrize("gpus", [None, 4])
+@pytest.mark.parametrize("hidden_size", [3])
+@pytest.mark.parametrize("illegal_chars", ["abc"])
+@pytest.mark.parametrize("n_layers", [7])
+@pytest.mark.parametrize("use_mlflow", [True, False])
+@pytest.mark.parametrize("max_epochs", [6])
+@pytest.mark.parametrize("output_path", ["some/path", "other/path"])
+@pytest.mark.parametrize("early_stopping", [True, False])
+@pytest.mark.parametrize("use_long", [True, False])
+@pytest.mark.parametrize("train_test_split", [0.8])
+@pytest.mark.parametrize("vocab_size", [5])
+@pytest.mark.parametrize("window_size", [1])
+def test_train(
+    tmpdir,
+    monkeypatch,
+    batch_size,
+    checkpoint_path,
+    dense_size,
+    extensions,
+    fill_strategy,
+    gpus,
+    hidden_size,
+    illegal_chars,
+    n_layers,
+    use_mlflow,
+    max_epochs,
+    output_path,
+    early_stopping,
+    use_long,
+    train_test_split,
+    vocab_size,
+    window_size
+):
+    train = getattr(mltype.cli.cli, "train")
+
+    path_dir = pathlib.Path(str(tmpdir))
+    path_file= path_dir / "1.txt"
+    path_file.write_text("HELLOOOO THEREEEE")
+
+    fake_run_train = Mock()
+    monkeypatch.setattr("mltype.ml.run_train", fake_run_train)
+
+    runner = CliRunner()
+    options = [
+        ("b", "batch-size", batch_size),
+        ("c", "checkpoint-path", checkpoint_path),
+        ("d", "dense-size", dense_size),
+        ("e", "extensions", extensions),
+        ("f", "fill-strategy", fill_strategy),
+        ("g", "gpus", gpus),
+        ("h", "hidden-size", hidden_size),
+        ("i", "illegal-chars", illegal_chars),
+        ("l", "n-layers", n_layers),
+        ("m", "use-mlflow", use_mlflow),
+        ("n", "max-epochs", max_epochs),
+        ("o", "output-path", output_path),
+        ("s", "early-stopping", early_stopping),
+        ("t", "train-test-split", train_test_split),
+        ("v", "vocab-size", vocab_size),
+        ("w", "window-size", window_size),
+    ]
+
+    command = command_composer((str(path_dir), str(path_file), "naame"),
+                                options, use_long=use_long)
+
+    print(command)  # to know why it failed
+
+    result = runner.invoke(train, command)
+    print(result.output)
+
+    assert result.exit_code == 0
+
+    fake_run_train.assert_called_once()
+
+    call = fake_run_train.call_args
+
+    assert isinstance(call.args[0], list)
+    assert call.args[1] == "naame"
+
+    assert call.kwargs == dict(batch_size=batch_size,
+            checkpoint_path=checkpoint_path,
+            dense_size=dense_size,
+            fill_strategy=fill_strategy,
+            gpus=gpus,
+            hidden_size=hidden_size,
+            illegal_chars=illegal_chars,
+            n_layers=n_layers,
+            use_mlflow=use_mlflow,
+            max_epochs=max_epochs,
+            output_path=output_path,
+            early_stopping=early_stopping,
+            train_test_split=train_test_split,
+            vocab_size=vocab_size,
+            window_size=window_size
+        )
 

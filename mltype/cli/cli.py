@@ -304,7 +304,7 @@ def train(
             path_p = pathlib.Path(str(p))
 
             if not path_p.exists():
-                raise ValueError("The provided path does not exist")
+                raise ValueError("The provided path does not exist")  # pragma: no cover
 
             if path_p.is_file():
                 texts = [file2text(path_p)]
@@ -314,12 +314,12 @@ def train(
                 )
                 texts = folder2text(path_p, valid_extensions=valid_extensions)
             else:
-                ValueError("Unrecognized object")
+                ValueError("Unrecognized object")  # pragma: no cover
 
             all_texts.extend(texts)
 
     if not all_texts:
-        raise ValueError("Did not manage to read any text")
+        raise ValueError("Did not manage to read any text")  # pragma: no cover
 
     run_train(
         all_texts,
