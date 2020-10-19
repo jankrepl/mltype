@@ -92,7 +92,7 @@ def test_random(
     use_long,
     target_wpm,
 ):
-    raw = getattr(mltype.cli.cli, "random")
+    random = getattr(mltype.cli.cli, "random")
 
     fake_main_basic = Mock()
     monkeypatch.setattr("mltype.interactive.main_basic", fake_main_basic)
@@ -109,7 +109,7 @@ def test_random(
     command = command_composer(("abc",), options, use_long=use_long)
     print(command)  # to know why it failed
 
-    result = runner.invoke(raw, command)
+    result = runner.invoke(random, command)
 
     assert result.exit_code == 0
     fake_main_basic.assert_called_once()
@@ -188,7 +188,7 @@ def test_replay(
     use_long,
     target_wpm,
 ):
-    raw = getattr(mltype.cli.cli, "replay")
+    replay = getattr(mltype.cli.cli, "replay")
 
     fake_main_replay = Mock()
     monkeypatch.setattr("mltype.interactive.main_replay", fake_main_replay)
@@ -204,7 +204,7 @@ def test_replay(
     command = command_composer(("aa",), options, use_long=use_long)
     print(command)  # to know why it failed
 
-    result = runner.invoke(raw, command)
+    result = runner.invoke(replay, command)
 
     assert result.exit_code == 0
     fake_main_replay.assert_called_once()
@@ -217,5 +217,82 @@ def test_replay(
         "force_perfect": force_perfect,
         "instant_death": instant_death,
         "overwrite": overwrite,
+        "target_wpm": target_wpm}
+
+@pytest.mark.parametrize("force_perfect", [True, False])
+@pytest.mark.parametrize("instant_death", [True, False])
+@pytest.mark.parametrize("n_chars", [3, 12])
+@pytest.mark.parametrize("output_file", ["some/path", "other/path"])
+@pytest.mark.parametrize("random_state", [6, 8])
+@pytest.mark.parametrize("use_long", [True, False])
+@pytest.mark.parametrize("target_wpm", [33, 55])
+def test_sample(
+    tmpdir,
+    monkeypatch,
+    force_perfect,
+    instant_death,
+    n_chars,
+    output_file,
+    random_state,
+    use_long,
+    target_wpm,
+):
+    # prevent parametrize from being huge
+    verbose = True
+    starting_text = "theeere"
+    top_k = 32
+
+    sample = getattr(mltype.cli.cli, "sample")
+
+    fake_main_basic = Mock()
+    fake_load_model = Mock(return_value=(Mock(), Mock()))
+    fake_sample_text = Mock(return_value="amazing")
+
+    monkeypatch.setattr("mltype.interactive.main_basic", fake_main_basic)
+    monkeypatch.setattr("mltype.ml.load_model", fake_load_model)
+    monkeypatch.setattr("mltype.ml.sample_text", fake_sample_text)
+
+    runner = CliRunner()
+    options = [
+        ("f", "force-perfect", force_perfect),
+        ("i", "instant-death", instant_death),
+        ("k", "top-k", top_k),
+        ("n", "n-chars", n_chars),
+        ("o", "output-file", output_file),
+        ("r", "random-state", random_state),
+        ("s", "starting-text", starting_text),
+        ("t", "target-wpm", target_wpm),
+        ("v", "verbose", verbose),
+    ]
+
+    command = command_composer(("something",), options, use_long=use_long)
+    print(command)  # to know why it failed
+
+    result = runner.invoke(sample, command)
+    print(result.output)
+
+    assert result.exit_code == 0
+
+    fake_sample_text.assert_called_once()
+
+    call_1 = fake_sample_text.call_args
+
+    assert call_1.args[0] == n_chars
+
+    assert call_1.kwargs == {
+        "initial_text": starting_text,
+        "random_state": random_state,
+        "top_k": top_k,
+        "verbose": verbose}
+
+    fake_main_basic.assert_called_once()
+
+    call_2 = fake_main_basic.call_args
+
+    assert call_2.args == ("amazing",)
+    assert call_2.kwargs == {
+        "force_perfect": force_perfect,
+        "instant_death": instant_death,
+        "output_file": output_file,
         "target_wpm": target_wpm}
 

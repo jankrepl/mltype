@@ -585,6 +585,3 @@ def sample(
         target_wpm=target_wpm,
     )
 
-
-if __name__ == "__main__":
-    cli()
