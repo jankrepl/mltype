@@ -171,5 +171,51 @@ def test_raw(
         "force_perfect": force_perfect,
         "instant_death": instant_death,
         "output_file": output_file,
-        "target_wpm": target_wpm,
-    }
+        "target_wpm": target_wpm}
+
+
+@pytest.mark.parametrize("force_perfect", [True, False])
+@pytest.mark.parametrize("instant_death", [True, False])
+@pytest.mark.parametrize("overwrite", [True, False])
+@pytest.mark.parametrize("use_long", [True, False])
+@pytest.mark.parametrize("target_wpm", [33, 55])
+def test_replay(
+    tmpdir,
+    monkeypatch,
+    force_perfect,
+    instant_death,
+    overwrite,
+    use_long,
+    target_wpm,
+):
+    raw = getattr(mltype.cli.cli, "replay")
+
+    fake_main_replay = Mock()
+    monkeypatch.setattr("mltype.interactive.main_replay", fake_main_replay)
+
+    runner = CliRunner()
+    options = [
+        ("f", "force-perfect", force_perfect),
+        ("i", "instant-death", instant_death),
+        ("w", "overwrite", overwrite),
+        ("t", "target-wpm", target_wpm),
+    ]
+
+    command = command_composer(("aa",), options, use_long=use_long)
+    print(command)  # to know why it failed
+
+    result = runner.invoke(raw, command)
+
+    assert result.exit_code == 0
+    fake_main_replay.assert_called_once()
+
+    call = fake_main_replay.call_args
+
+    assert call.args == tuple()
+    assert call.kwargs == {
+        "replay_file": "aa",
+        "force_perfect": force_perfect,
+        "instant_death": instant_death,
+        "overwrite": overwrite,
+        "target_wpm": target_wpm}
+
