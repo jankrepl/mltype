@@ -50,6 +50,7 @@ def test_help(cmd):
 
     assert result.exit_code == 0
 
+
 @pytest.mark.parametrize("end_line", [None, 5, 10])
 @pytest.mark.parametrize("force_perfect", [True])
 @pytest.mark.parametrize("include_whitespace", [False])
@@ -92,7 +93,7 @@ def test_file(
         ("r", "random-state", random_state),
         ("s", "start-line", start_line),
         ("t", "target-wpm", target_wpm),
-        ("w", "include-whitespace", include_whitespace)
+        ("w", "include-whitespace", include_whitespace),
     ]
 
     command = command_composer((str(file_path),), options, use_long=use_long)
@@ -130,6 +131,7 @@ def test_file(
         "output_file": output_file,
         "target_wpm": target_wpm,
     }
+
 
 @pytest.mark.parametrize("dir_exists", [True, False])
 def test_ls(tmpdir, monkeypatch, dir_exists):
@@ -255,7 +257,8 @@ def test_raw(
         "force_perfect": force_perfect,
         "instant_death": instant_death,
         "output_file": output_file,
-        "target_wpm": target_wpm}
+        "target_wpm": target_wpm,
+    }
 
 
 @pytest.mark.parametrize("force_perfect", [True, False])
@@ -300,7 +303,9 @@ def test_replay(
         "force_perfect": force_perfect,
         "instant_death": instant_death,
         "overwrite": overwrite,
-        "target_wpm": target_wpm}
+        "target_wpm": target_wpm,
+    }
+
 
 @pytest.mark.parametrize("force_perfect", [True, False])
 @pytest.mark.parametrize("instant_death", [True, False])
@@ -365,7 +370,8 @@ def test_sample(
         "initial_text": starting_text,
         "random_state": random_state,
         "top_k": top_k,
-        "verbose": verbose}
+        "verbose": verbose,
+    }
 
     fake_main_basic.assert_called_once()
 
@@ -376,7 +382,9 @@ def test_sample(
         "force_perfect": force_perfect,
         "instant_death": instant_death,
         "output_file": output_file,
-        "target_wpm": target_wpm}
+        "target_wpm": target_wpm,
+    }
+
 
 @pytest.mark.parametrize("batch_size", [34])
 @pytest.mark.parametrize("checkpoint_path", [None, "some_path"])
@@ -414,12 +422,12 @@ def test_train(
     use_long,
     train_test_split,
     vocab_size,
-    window_size
+    window_size,
 ):
     train = getattr(mltype.cli.cli, "train")
 
     path_dir = pathlib.Path(str(tmpdir))
-    path_file= path_dir / "1.txt"
+    path_file = path_dir / "1.txt"
     path_file.write_text("HELLOOOO THEREEEE")
 
     fake_run_train = Mock()
@@ -445,8 +453,9 @@ def test_train(
         ("w", "window-size", window_size),
     ]
 
-    command = command_composer((str(path_dir), str(path_file), "naame"),
-                                options, use_long=use_long)
+    command = command_composer(
+        (str(path_dir), str(path_file), "naame"), options, use_long=use_long
+    )
 
     print(command)  # to know why it failed
 
@@ -462,20 +471,20 @@ def test_train(
     assert isinstance(call.args[0], list)
     assert call.args[1] == "naame"
 
-    assert call.kwargs == dict(batch_size=batch_size,
-            checkpoint_path=checkpoint_path,
-            dense_size=dense_size,
-            fill_strategy=fill_strategy,
-            gpus=gpus,
-            hidden_size=hidden_size,
-            illegal_chars=illegal_chars,
-            n_layers=n_layers,
-            use_mlflow=use_mlflow,
-            max_epochs=max_epochs,
-            output_path=output_path,
-            early_stopping=early_stopping,
-            train_test_split=train_test_split,
-            vocab_size=vocab_size,
-            window_size=window_size
-        )
-
+    assert call.kwargs == dict(
+        batch_size=batch_size,
+        checkpoint_path=checkpoint_path,
+        dense_size=dense_size,
+        fill_strategy=fill_strategy,
+        gpus=gpus,
+        hidden_size=hidden_size,
+        illegal_chars=illegal_chars,
+        n_layers=n_layers,
+        use_mlflow=use_mlflow,
+        max_epochs=max_epochs,
+        output_path=output_path,
+        early_stopping=early_stopping,
+        train_test_split=train_test_split,
+        vocab_size=vocab_size,
+        window_size=window_size,
+    )

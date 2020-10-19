@@ -304,7 +304,9 @@ def train(
             path_p = pathlib.Path(str(p))
 
             if not path_p.exists():
-                raise ValueError("The provided path does not exist")  # pragma: no cover
+                raise ValueError(
+                    "The provided path does not exist"
+                )  # pragma: no cover
 
             if path_p.is_file():
                 texts = [file2text(path_p)]
@@ -584,4 +586,3 @@ def sample(
         instant_death=instant_death,
         target_wpm=target_wpm,
     )
-
