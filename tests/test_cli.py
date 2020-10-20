@@ -123,9 +123,9 @@ def test_file(
 
     call = fake_main_basic.call_args
 
-    assert isinstance(call.args[0], str)
+    assert isinstance(call[0][0], str)
 
-    assert call.kwargs == {
+    assert call[1] == {
         "force_perfect": force_perfect,
         "instant_death": instant_death,
         "output_file": output_file,
@@ -203,9 +203,9 @@ def test_random(
 
     call = fake_main_basic.call_args
 
-    assert set(call.args[0]).issubset(set("abc"))
+    assert set(call[0][0]).issubset(set("abc"))
 
-    assert call.kwargs == {
+    assert call[1] == {
         "force_perfect": force_perfect,
         "instant_death": instant_death,
         "output_file": output_file,
@@ -252,8 +252,8 @@ def test_raw(
 
     call = fake_main_basic.call_args
 
-    assert call.args == ("Hello",)
-    assert call.kwargs == {
+    assert call[0] == ("Hello",)
+    assert call[1] == {
         "force_perfect": force_perfect,
         "instant_death": instant_death,
         "output_file": output_file,
@@ -297,8 +297,8 @@ def test_replay(
 
     call = fake_main_replay.call_args
 
-    assert call.args == tuple()
-    assert call.kwargs == {
+    assert call[0] == tuple()
+    assert call[1] == {
         "replay_file": "aa",
         "force_perfect": force_perfect,
         "instant_death": instant_death,
@@ -364,9 +364,9 @@ def test_sample(
 
     call_1 = fake_sample_text.call_args
 
-    assert call_1.args[0] == n_chars
+    assert call_1[0][0] == n_chars
 
-    assert call_1.kwargs == {
+    assert call_1[1] == {
         "initial_text": starting_text,
         "random_state": random_state,
         "top_k": top_k,
@@ -377,8 +377,8 @@ def test_sample(
 
     call_2 = fake_main_basic.call_args
 
-    assert call_2.args == ("amazing",)
-    assert call_2.kwargs == {
+    assert call_2[0] == ("amazing",)
+    assert call_2[1] == {
         "force_perfect": force_perfect,
         "instant_death": instant_death,
         "output_file": output_file,
@@ -468,10 +468,10 @@ def test_train(
 
     call = fake_run_train.call_args
 
-    assert isinstance(call.args[0], list)
-    assert call.args[1] == "naame"
+    assert isinstance(call[0][0], list)
+    assert call[0][1] == "naame"
 
-    assert call.kwargs == dict(
+    assert call[1] == dict(
         batch_size=batch_size,
         checkpoint_path=checkpoint_path,
         dense_size=dense_size,
