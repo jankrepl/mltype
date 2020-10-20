@@ -370,7 +370,6 @@ class LanguageDataset(torch.utils.data.Dataset):
             The vocabulary. The reason why we want to provide this too
             is to have access to it during validation.
         """
-
         X_sample = torch.from_numpy(self.ohv_matrix[self.X[ix]])
         y_sample = torch.from_numpy(self.ohv_matrix[self.y[ix]])
 
@@ -874,7 +873,6 @@ def save_model(model, vocabulary, path):
     path : pathlib.Path
             Path to the file that will whole the serialized object.
     """
-
     output_dict = {
         "kwargs": model.hparams,
         "model_class_name": model.__class__.__name__,

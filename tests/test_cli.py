@@ -5,7 +5,7 @@ from unittest.mock import Mock
 from click.testing import CliRunner
 import pytest
 
-import mltype.cli.cli
+import mltype.cli
 
 
 def command_composer(args, options, use_long=True):
@@ -43,7 +43,7 @@ def command_composer(args, options, use_long=True):
     "cmd", ["cli", "file", "ls", "random", "raw", "replay", "sample", "train"]
 )
 def test_help(cmd):
-    fun = getattr(mltype.cli.cli, cmd)
+    fun = getattr(mltype.cli, cmd)
 
     runner = CliRunner()
     result = runner.invoke(fun, "--help")
@@ -78,7 +78,7 @@ def test_file(
     file_path = pathlib.Path(str(tmpdir)) / "texts.txt"
     file_path.write_text("\n".join(30 * ["sds"]))
 
-    file_ = getattr(mltype.cli.cli, "file")
+    file_ = getattr(mltype.cli, "file")
 
     fake_main_basic = Mock()
     monkeypatch.setattr("mltype.interactive.main_basic", fake_main_basic)
@@ -135,7 +135,7 @@ def test_file(
 
 @pytest.mark.parametrize("dir_exists", [True, False])
 def test_ls(tmpdir, monkeypatch, dir_exists):
-    ls = getattr(mltype.cli.cli, "ls")
+    ls = getattr(mltype.cli, "ls")
 
     new_home = pathlib.Path(str(tmpdir))
     path_languages = new_home / ".mltype" / "languages"
@@ -179,7 +179,7 @@ def test_random(
     use_long,
     target_wpm,
 ):
-    random = getattr(mltype.cli.cli, "random")
+    random = getattr(mltype.cli, "random")
 
     fake_main_basic = Mock()
     monkeypatch.setattr("mltype.interactive.main_basic", fake_main_basic)
@@ -228,7 +228,7 @@ def test_raw(
     use_long,
     target_wpm,
 ):
-    raw = getattr(mltype.cli.cli, "raw")
+    raw = getattr(mltype.cli, "raw")
 
     fake_main_basic = Mock()
     monkeypatch.setattr("mltype.interactive.main_basic", fake_main_basic)
@@ -274,7 +274,7 @@ def test_replay(
     use_long,
     target_wpm,
 ):
-    replay = getattr(mltype.cli.cli, "replay")
+    replay = getattr(mltype.cli, "replay")
 
     fake_main_replay = Mock()
     monkeypatch.setattr("mltype.interactive.main_replay", fake_main_replay)
@@ -329,7 +329,7 @@ def test_sample(
     starting_text = "theeere"
     top_k = 32
 
-    sample = getattr(mltype.cli.cli, "sample")
+    sample = getattr(mltype.cli, "sample")
 
     fake_main_basic = Mock()
     fake_load_model = Mock(return_value=(Mock(), Mock()))
@@ -424,7 +424,7 @@ def test_train(
     vocab_size,
     window_size,
 ):
-    train = getattr(mltype.cli.cli, "train")
+    train = getattr(mltype.cli, "train")
 
     path_dir = pathlib.Path(str(tmpdir))
     path_file = path_dir / "1.txt"

@@ -16,7 +16,7 @@ class Cursor:
 
     @property
     def pos(self):
-        """Current position (x, y) of the cursors."""
+        """Get current position (x, y) of the cursors."""
         return self.stdscr.getyx()
 
     def get_char(self):
@@ -77,6 +77,8 @@ class Cursor:
 
 
 class Pen:
+    """Represents background and font color."""
+
     def __init__(self, font, background, i):
         self.font = font
         self.background = background
@@ -85,12 +87,39 @@ class Pen:
         self._register()
 
     def addch(self, stdscr, y, x, text):
+        """Add a single character.
+
+        Parameters
+        ----------
+        stdscr : curses.Window
+            Window in which we add the character.
+
+        y, x : int
+            Position of the character.
+
+        text : str
+            Single element string representing the character.
+        """
         stdscr.addch(y, x, text, curses.color_pair(self.i))
 
     def addstr(self, stdscr, y, x, text):
+        """Add string.
+
+        Parameters
+        ----------
+        stdscr : curses.Window
+            Window in which we add the character.
+
+        y, x : int
+            Position of the character.
+
+        text : str
+            The string to be added.
+        """
         stdscr.addstr(y, x, text, curses.color_pair(self.i))
 
     def _register(self):
+        """Register colors with curses."""
         curses.init_pair(self.i, self.font, self.background)
 
 
@@ -177,7 +206,6 @@ class TypedTextWriter:
 
     def _validate_replay(self):
         """Check that the replay is compatible with the current text."""
-
         if self.replay_tt.text != self.tt.text:
             raise ValueError("The replay text and text do not agree.")
 
@@ -246,7 +274,6 @@ class TypedTextWriter:
         except curses.error:
             return
 
-
         # Action characters handeling
         if char_typed_ == -1:
             # no key typed:
@@ -280,7 +307,7 @@ class TypedTextWriter:
 
     @property
     def screen_status(self):
-        """The starting position of our text
+        """Get screen information.
 
         Returns
         -------
@@ -326,13 +353,12 @@ def run_loop(
 
 
 def main_basic(text, force_perfect, output_file, instant_death, target_wpm):
-    """Run main curses loop with no previous replay
+    """Run main curses loop with no previous replay.
 
     Parameters
     ----------
     force_perfect : bool
-        If True, then one cannot finish typing before all characters
-        are typed without any mistakes.
+        If True, then one cannot finish typing before all characters are typed without any mistakes.
 
     output_file : str or pathlib.Path or None
         If ``pathlib.Path`` then we store the typed text in this file.

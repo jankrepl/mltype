@@ -32,6 +32,10 @@ jobs:
       run: |
         black --check -l 80 mltype tests setup.py
 
+    - name: Check docstrings with pydocstyle
+      run: |
+        pydocstyle mltype
+
     - name: Test with pytest
       run: |
         pytest  # see tox.ini for config

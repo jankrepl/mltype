@@ -130,7 +130,7 @@ class TypedText:
 
     @property
     def elapsed_seconds(self):
-        """The number of seconds elapsed from the first action."""
+        """Get the number of seconds elapsed from the first action."""
         if self.start_ts is None:
             return 0
 
@@ -140,17 +140,17 @@ class TypedText:
 
     @property
     def n_actions(self):
-        """The number of actions that have been taken."""
+        """Get the number of actions that have been taken."""
         return sum(len(x) for x in self.actions)
 
     @property
     def n_characters(self):
-        """The number of characters in the text."""
+        """Get the number of characters in the text."""
         return len(self.text)
 
     @property
     def n_backspace_actions(self):
-        """The number of backspace actions."""
+        """Get the number of backspace actions."""
         return sum(
             sum(1 for a in x if a.status == STATUS_BACKSPACE)
             for x in self.actions
@@ -158,22 +158,22 @@ class TypedText:
 
     @property
     def n_backspace_characters(self):
-        """The number of characters that have been backspaced."""
+        """Get the number of characters that have been backspaced."""
         return self._n_characters_with_status(STATUS_BACKSPACE)
 
     @property
     def n_correct_characters(self):
-        """The number of characters that have been typed correctly."""
+        """Get the number of characters that have been typed correctly."""
         return self._n_characters_with_status(STATUS_CORRECT)
 
     @property
     def n_untouched_characters(self):
-        """The number of characters that have not been touched yet."""
+        """Get the number of characters that have not been touched yet."""
         return len([x for x in self.actions if not x])
 
     @property
     def n_wrong_characters(self):
-        """The number of characters that have been typed wrongly."""
+        """Get the number of characters that have been typed wrongly."""
         return self._n_characters_with_status(STATUS_WRONG)
 
     def compute_accuracy(self):
@@ -203,7 +203,7 @@ class TypedText:
         return self.compute_cpm() / word_size
 
     def check_finished(self, force_perfect=True):
-        """Determined whether the typing has been finished successfully.
+        """Determine whether the typing has been finished successfully.
 
         Parameters
         ----------
@@ -272,7 +272,7 @@ class TypedText:
             self.end_ts = ts
 
     def unroll_actions(self):
-        """Export actions in an order they appeared
+        """Export actions in an order they appeared.
 
         Returns
         -------
