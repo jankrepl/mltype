@@ -11,8 +11,8 @@ warnings.filterwarnings("ignore")
 
 
 @click.group()
-def cli():
-    """Tool for improving typing speed and accuracy."""
+def cli():  # noqa: D400
+    """Tool for improving typing speed and accuracy"""
 
 
 @cli.command()
@@ -80,8 +80,8 @@ def file(
     output_file,
     target_wpm,
     include_whitespace,
-):
-    """Type text from a file"""
+):  # noqa: D400
+    """Type text from a file."""  # noqa: D400
     import numpy as np
 
     from mltype.interactive import main_basic
@@ -132,7 +132,7 @@ def file(
 
 
 @cli.command()
-def ls():
+def ls():  # noqa: D400
     """List all language models"""
     from mltype.utils import get_cache_dir
 
@@ -288,7 +288,7 @@ def train(
     use_mlflow,
     vocab_size,
     window_size,
-):
+):  # noqa: D400
     """Train a language"""
     params = locals()
     from mltype.data import file2text, folder2text
@@ -381,7 +381,7 @@ def train(
 )
 def random(
     characters, force_perfect, instant_death, n_chars, output_file, target_wpm
-):
+):  # noqa: D400
     """Sample characters randomly from a provided vocabulary"""
     import numpy as np
 
@@ -438,7 +438,7 @@ def random(
 )
 def raw(
     text, force_perfect, output_file, instant_death, target_wpm, raw_string
-):
+):  # noqa: D400
     """Provide text manually"""
     import codecs
 
@@ -477,7 +477,9 @@ def raw(
     help="The desired speed to be shown as a guide",
 )
 @click.option("-w", "--overwrite", is_flag=True)
-def replay(replay_file, force_perfect, instant_death, overwrite, target_wpm):
+def replay(
+    replay_file, force_perfect, instant_death, overwrite, target_wpm
+):  # noqa: D400
     """Compete against a past performance"""
     from mltype.interactive import main_replay
 
@@ -559,7 +561,7 @@ def sample(
     verbose,
     starting_text,
     top_k,
-):
+):  # noqa: D400
     """Sample text from a language"""
     sys.modules["mlflow"] = None
     from mltype.interactive import main_basic

@@ -1,4 +1,4 @@
-"""Computation of various statistics"""
+"""Computation of various statistics."""
 
 from collections import defaultdict
 

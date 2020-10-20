@@ -37,7 +37,7 @@ setup(
     },
     entry_points={
         "console_scripts": [
-            "mlt = mltype.cli.cli:cli",
+            "mlt = mltype.cli:cli",
         ]
     },
 )
