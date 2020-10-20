@@ -60,7 +60,7 @@ def test_help(cmd):
 @pytest.mark.parametrize("random_state", [None, 7])
 @pytest.mark.parametrize("start_line", [None, 9])
 @pytest.mark.parametrize("use_long", [True, False])
-@pytest.mark.parametrize("target_wpm", [33, 55])
+@pytest.mark.parametrize("target_wpm", [55])
 def test_file(
     tmpdir,
     monkeypatch,
@@ -164,12 +164,12 @@ def test_ls(tmpdir, monkeypatch, dir_exists):
     assert result.output == "a\nb\n"
 
 
-@pytest.mark.parametrize("force_perfect", [True, False])
-@pytest.mark.parametrize("instant_death", [True, False])
-@pytest.mark.parametrize("n_chars", [34, 52])
-@pytest.mark.parametrize("output_file", ["some/path", "other/path"])
+@pytest.mark.parametrize("force_perfect", [True])
+@pytest.mark.parametrize("instant_death", [True])
+@pytest.mark.parametrize("n_chars", [52])
+@pytest.mark.parametrize("output_file", ["some/path"])
 @pytest.mark.parametrize("use_long", [True, False])
-@pytest.mark.parametrize("target_wpm", [33, 55])
+@pytest.mark.parametrize("target_wpm", [55])
 def test_random(
     monkeypatch,
     force_perfect,
@@ -213,12 +213,12 @@ def test_random(
     }
 
 
-@pytest.mark.parametrize("force_perfect", [True, False])
-@pytest.mark.parametrize("instant_death", [True, False])
-@pytest.mark.parametrize("output_file", ["some/path", "other/path"])
-@pytest.mark.parametrize("raw_string", [True, False])
+@pytest.mark.parametrize("force_perfect", [True])
+@pytest.mark.parametrize("instant_death", [True])
+@pytest.mark.parametrize("output_file", ["other/path"])
+@pytest.mark.parametrize("raw_string", [False])
 @pytest.mark.parametrize("use_long", [True, False])
-@pytest.mark.parametrize("target_wpm", [33, 55])
+@pytest.mark.parametrize("target_wpm", [33])
 def test_raw(
     monkeypatch,
     force_perfect,
@@ -261,11 +261,11 @@ def test_raw(
     }
 
 
-@pytest.mark.parametrize("force_perfect", [True, False])
-@pytest.mark.parametrize("instant_death", [True, False])
-@pytest.mark.parametrize("overwrite", [True, False])
+@pytest.mark.parametrize("force_perfect", [True])
+@pytest.mark.parametrize("instant_death", [True])
+@pytest.mark.parametrize("overwrite", [True])
 @pytest.mark.parametrize("use_long", [True, False])
-@pytest.mark.parametrize("target_wpm", [33, 55])
+@pytest.mark.parametrize("target_wpm", [55])
 def test_replay(
     monkeypatch,
     force_perfect,
@@ -307,13 +307,13 @@ def test_replay(
     }
 
 
-@pytest.mark.parametrize("force_perfect", [True, False])
-@pytest.mark.parametrize("instant_death", [True, False])
-@pytest.mark.parametrize("n_chars", [3, 12])
-@pytest.mark.parametrize("output_file", ["some/path", "other/path"])
-@pytest.mark.parametrize("random_state", [6, 8])
+@pytest.mark.parametrize("force_perfect", [True])
+@pytest.mark.parametrize("instant_death", [True])
+@pytest.mark.parametrize("n_chars", [3])
+@pytest.mark.parametrize("output_file", ["other/path"])
+@pytest.mark.parametrize("random_state", [8])
 @pytest.mark.parametrize("use_long", [True, False])
-@pytest.mark.parametrize("target_wpm", [33, 55])
+@pytest.mark.parametrize("target_wpm", [33])
 def test_sample(
     monkeypatch,
     force_perfect,
@@ -387,18 +387,18 @@ def test_sample(
 
 
 @pytest.mark.parametrize("batch_size", [34])
-@pytest.mark.parametrize("checkpoint_path", [None, "some_path"])
+@pytest.mark.parametrize("checkpoint_path", ["some_path"])
 @pytest.mark.parametrize("dense_size", [30])
-@pytest.mark.parametrize("extensions", [None, ".py"])
+@pytest.mark.parametrize("extensions", [".py"])
 @pytest.mark.parametrize("fill_strategy", ["zeros"])
-@pytest.mark.parametrize("gpus", [None, 4])
+@pytest.mark.parametrize("gpus", [4])
 @pytest.mark.parametrize("hidden_size", [3])
 @pytest.mark.parametrize("illegal_chars", ["abc"])
 @pytest.mark.parametrize("n_layers", [7])
-@pytest.mark.parametrize("use_mlflow", [True, False])
+@pytest.mark.parametrize("use_mlflow", [True])
 @pytest.mark.parametrize("max_epochs", [6])
-@pytest.mark.parametrize("output_path", ["some/path", "other/path"])
-@pytest.mark.parametrize("early_stopping", [True, False])
+@pytest.mark.parametrize("output_path", ["some/path"])
+@pytest.mark.parametrize("early_stopping", [True])
 @pytest.mark.parametrize("use_long", [True, False])
 @pytest.mark.parametrize("train_test_split", [0.8])
 @pytest.mark.parametrize("vocab_size", [5])
