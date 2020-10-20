@@ -240,14 +240,19 @@ class TypedTextWriter:
         self.stdscr.refresh()
 
     def process_character(self):
-        """The integer."""
+        """Process an entered character."""
         try:
             char_typed_ = self.stdscr.getch()
         except curses.error:
             return
 
+
         # Action characters handeling
-        if char_typed_ in {127, curses.KEY_BACKSPACE}:
+        if char_typed_ == -1:
+            # no key typed:
+            return
+
+        elif char_typed_ in {127, curses.KEY_BACKSPACE}:
             try:
                 self.tt.type_character(self.current_ix)
             except IndexError:
@@ -302,11 +307,11 @@ def run_loop(
     target_wpm=None,
 ):
     """Run curses loop - actual implementation."""
-
     tt = TypedText(text)
     writer = TypedTextWriter(
         tt, stdscr, replay_tt=replay_tt, target_wpm=target_wpm
     )
+    stdscr.nodelay(1)  # makes getch non-blocking
 
     while not tt.check_finished(force_perfect=force_perfect):
         writer.render()
