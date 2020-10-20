@@ -358,7 +358,8 @@ def main_basic(text, force_perfect, output_file, instant_death, target_wpm):
     Parameters
     ----------
     force_perfect : bool
-        If True, then one cannot finish typing before all characters are typed without any mistakes.
+        If True, then one cannot finish typing before all characters are
+        typed without any mistakes.
 
     output_file : str or pathlib.Path or None
         If ``pathlib.Path`` then we store the typed text in this file.
