@@ -128,18 +128,10 @@ class TestText2Features:
 
 
 class TestSampleChar:
-    def test_error(self):
-        with pytest.raises(ValueError):
-            sample_char(
-                Mock(spec=torch.nn.Module),
-                ["a", "b"],
-                previous_char="aasdfsadfsa",
-            )
-
     @pytest.mark.parametrize("top_k", [None, 2])
     @pytest.mark.parametrize("random_state", [None, 3])
-    @pytest.mark.parametrize("previous_char", [None, "s"])
-    def test_basic(self, top_k, random_state, previous_char):
+    @pytest.mark.parametrize("previous_chars", [None, "s", "initial_text"])
+    def test_basic(self, top_k, random_state, previous_chars):
         network = Mock(spec=torch.nn.Module)
         network.return_value = torch.tensor([[0, 1, 0]]), "h", "c"
         vocabulary = ["a", "b", "c"]
@@ -147,7 +139,7 @@ class TestSampleChar:
         ch, h, c = sample_char(
             network,
             vocabulary,
-            previous_char=previous_char,
+            previous_chars=previous_chars,
             random_state=random_state,
             top_k=top_k,
         )

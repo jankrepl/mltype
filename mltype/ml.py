@@ -18,7 +18,7 @@ warnings.filterwarnings("ignore")
 def create_data_language(
     text, vocabulary, window_size=2, fill_strategy="zeros", verbose=False
 ):
-    """Create a supervised dataset for the character-lever language model.
+    """Create a supervised dataset for the characte/-lever language model.
 
     Parameters
     ----------
@@ -151,7 +151,7 @@ def sample_char(
     vocabulary,
     h=None,
     c=None,
-    previous_char=None,
+    previous_chars=None,
     random_state=None,
     top_k=None,
     device=None,
@@ -171,8 +171,8 @@ def sample_char(
         Hidden states with shape `(n_layers, batch_size=1, hidden_size)`.
         Note that if both of them are None we are at the very first character.
 
-    previous_char : None or str
-        Previous charater. None or and empty string if we are at the very
+    previous_chars : None or str
+        Previous charaters. None or and empty string if we are at the very
         first character.
 
     random_state : None or int
@@ -192,11 +192,8 @@ def sample_char(
     """
     device = device or torch.device("cpu")
 
-    if previous_char:
-        if len(previous_char) != 1:
-            raise ValueError("One can only provide a single character")
-
-        features = text2features(previous_char, vocabulary)
+    if previous_chars:
+        features = text2features(previous_chars, vocabulary)
     else:
         features = np.zeros((1, len(vocabulary)), dtype=np.bool)
 
@@ -270,7 +267,8 @@ def sample_text(
     """
     device = device or torch.device("cpu")
     network.eval()
-    res = initial_text or ""
+    initial_text = initial_text or ""
+    res = initial_text
     h, c = None, None
 
     iterable = range(n_chars)
@@ -281,13 +279,13 @@ def sample_text(
         np.random.seed(random_state)
 
     for _ in iterable:
-        previous_char = res[-1] if res else None
+        previous_chars = initial_text if res == initial_text else res[-1]
         new_ch, h, c = sample_char(
             network,
             vocabulary,
             h=h,
             c=c,
-            previous_char=previous_char,
+            previous_chars=previous_chars,
             top_k=top_k,
             device=device,
         )

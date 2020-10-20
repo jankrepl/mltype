@@ -13,14 +13,13 @@ warnings.filterwarnings("ignore")
 @click.group()
 def cli():
     """Tool for improving typing speed and accuracy."""
-    pass
 
 
 @cli.command()
 @click.argument("path", type=click.File("r"))
 @click.option(
     "-e",
-    "--end_line",
+    "--end-line",
     type=int,
     help="The end line of the excerpt to use. Needs to be used together with "
     "start-line.",
@@ -39,7 +38,7 @@ def cli():
 )
 @click.option(
     "-l",
-    "--n_lines",
+    "--n-lines",
     type=int,
     help="Number of consecutive lines to be selected at random. Cannot be "
     "used together with start-line and end-line.",
@@ -53,7 +52,7 @@ def cli():
 @click.option("-r", "--random-state", type=int)
 @click.option(
     "-s",
-    "--start_line",
+    "--start-line",
     type=int,
     help="the start line of the excerpt to use. needs to be used together "
     "with end-line.",
@@ -305,7 +304,9 @@ def train(
             path_p = pathlib.Path(str(p))
 
             if not path_p.exists():
-                raise ValueError("The provided path does not exist")
+                raise ValueError(
+                    "The provided path does not exist"
+                )  # pragma: no cover
 
             if path_p.is_file():
                 texts = [file2text(path_p)]
@@ -315,12 +316,12 @@ def train(
                 )
                 texts = folder2text(path_p, valid_extensions=valid_extensions)
             else:
-                ValueError("Unrecognized object")
+                ValueError("Unrecognized object")  # pragma: no cover
 
             all_texts.extend(texts)
 
     if not all_texts:
-        raise ValueError("Did not manage to read any text")
+        raise ValueError("Did not manage to read any text")  # pragma: no cover
 
     run_train(
         all_texts,
@@ -374,7 +375,7 @@ def train(
 )
 @click.option(
     "-t",
-    "--target_wpm",
+    "--target-wpm",
     type=int,
     help="The desired speed to be shown as a guide",
 )
@@ -385,9 +386,6 @@ def random(
     import numpy as np
 
     from mltype.interactive import main_basic
-
-    if not characters:
-        raise ValueError("No characters were provided")
 
     c = Counter(characters)
     vocabulary = list(c.keys())
@@ -434,7 +432,7 @@ def random(
 )
 @click.option(
     "-t",
-    "--target_wpm",
+    "--target-wpm",
     type=int,
     help="The desired speed to be shown as a guide",
 )
@@ -474,7 +472,7 @@ def raw(
 )
 @click.option(
     "-t",
-    "--target_wpm",
+    "--target-wpm",
     type=int,
     help="The desired speed to be shown as a guide",
 )
@@ -540,7 +538,7 @@ def replay(replay_file, force_perfect, instant_death, overwrite, target_wpm):
 )
 @click.option(
     "-t",
-    "--target_wpm",
+    "--target-wpm",
     type=int,
     help="The desired speed to be shown as a guide",
 )
@@ -588,7 +586,3 @@ def sample(
         instant_death=instant_death,
         target_wpm=target_wpm,
     )
-
-
-if __name__ == "__main__":
-    cli()
