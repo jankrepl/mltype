@@ -1,4 +1,5 @@
 """Collection of tests covering the `interactive.py` module."""
+from datetime import datetime
 from unittest.mock import Mock, MagicMock
 
 import hecate.hecate
@@ -37,6 +38,19 @@ DEFAULT_BACKGROUND = "black"
 def esc(x):
     return f"\033[{x}m"
 
+
+def gen_fb(font=None, background=None):
+    """Generate font color and background color escape sequence."""
+
+    s = ""
+    if font is not None:
+        s += esc(font_colors[font])
+
+    if background is not None:
+        s += esc(background_colors[background])
+
+    return s
+
 class CustomRunner(hecate.hecate.Runner):
     """Add convenience methods and color screenshotting."""
     def await_ctext(self, text, timeout=None):
@@ -59,6 +73,15 @@ class CustomRunner(hecate.hecate.Runner):
                                          "-p",
                                          "#{cursor_x}\t#{cursor_y}").split()
         return int(x_s), int(y_s)
+
+    def record_cscreenshots(self, n_seconds=1, pane=0):
+        all_ss = set()
+        start = datetime.now()
+
+        while (datetime.now() - start).total_seconds() < n_seconds:
+            all_ss.add(self.cscreenshot())
+
+        return all_ss
 
 
 def capture_pane_color(self, pane):
@@ -95,7 +118,7 @@ def test_strip(monkeypatch):
 
 
 class TestHecate:
-    def test_basic(self, monkeypatch):
+    def test_basic(self):
         with CustomRunner("mlt", "raw", "inside") as r:
             assert r.get_cursor_position() == (0, 0)
             # initial check
@@ -106,10 +129,9 @@ class TestHecate:
 
             # type i
             r.write("i")
-            s = esc(font_colors["green"])
-            s += esc(background_colors[DEFAULT_BACKGROUND])
+            s = gen_fb("green", DEFAULT_BACKGROUND)
             s += "i"
-            s += esc(font_colors["white"])
+            s += gen_fb("white")
             s = "nside"
             r.await_ctext(s, 1)
             assert r.get_cursor_position() == (1, 0)
@@ -121,13 +143,11 @@ class TestHecate:
 
             # type insa
             r.write("insa")
-            s = esc(font_colors["green"])
-            s += esc(background_colors[DEFAULT_BACKGROUND])
+            s = gen_fb("green", DEFAULT_BACKGROUND)
             s += "ins"
-            s = esc(font_colors["white"])
-            s += esc(background_colors["red"])
+            s += gen_fb("white", "red")
             s += "i"
-            s += esc(background_colors[DEFAULT_BACKGROUND])
+            s += gen_fb(None, DEFAULT_BACKGROUND)
             s += "de"
             r.await_ctext(s, 1)
             assert r.get_cursor_position() == (4, 0)
@@ -137,3 +157,20 @@ class TestHecate:
             r.write("ide")
 
             r.await_ctext("== Statistics ==")
+
+    def test_target_speed(self):
+        with CustomRunner("mlt", "raw", "hello", "-t", "120") as r:
+            r.await_ctext(gen_fb("white", DEFAULT_BACKGROUND) + "hello")
+            assert r.get_cursor_position() == (0, 0)
+
+
+            r.press("BSpace")  # this triggers the marker
+            r.await_ctext(esc(background_colors["magenta"]))
+
+            all_ss = r.record_cscreenshots(0.5)
+
+            # the first one is excluded because the cursor is there
+            assert len(all_ss) == 4
+            l = [esc(background_colors["magenta"]) in x for x in all_ss]
+            assert all(l)
+
