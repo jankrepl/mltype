@@ -1,15 +1,8 @@
 """Collection of tests covering the `interactive.py` module."""
 from unittest.mock import Mock, MagicMock
 
+import hecate.hecate
 import pytest
-
-try:
-    import hecate.hecate
-
-    RUN_HECATE = True
-
-except ImportError:
-    RUN_HECATE = False
 
 from mltype.base import TypedText
 from mltype.interactive import main_basic
@@ -44,6 +37,29 @@ DEFAULT_BACKGROUND = "black"
 def esc(x):
     return f"\033[{x}m"
 
+class CustomRunner(hecate.hecate.Runner):
+    """Add convenience methods and color screenshotting."""
+    def await_ctext(self, text, timeout=None):
+        for _ in self.poll_until_timeout(timeout):
+            screen = self.cscreenshot()
+            if text in screen:
+                return
+        raise Timeout("Timeout while waiting for text %r to appear" % (text,))
+
+    def cscreenshot(self, pane=0):
+        """Screenshot with color."""
+        buf = self.tmux.a_buffer()
+        self.tmux.execute_command("capture-pane", "-e", "-b", buf, "-t", pane)
+        return self.tmux.get_buffer(buf)
+
+    def get_cursor_position(self):
+        """Get current position of the cursor."""
+
+    def get_line(self, i):
+        """Get all the text on a given line."""
+
+    def resize(self, height, width):
+        """Resize the pane"""
 
 def capture_pane_color(self, pane):
     """Screenshot the entire tmux pane with colors.
@@ -81,16 +97,13 @@ def test_strip(monkeypatch):
 class TestHecate:
     @pytest.mark.skipif(not RUN_HECATE, reason="Hecate is not installed")
     def test_basic(self, monkeypatch):
-        monkeypatch.setattr(
-            hecate.hecate.Tmux, "capture_pane", capture_pane_color
-        )
 
-        with hecate.hecate.Runner("mlt", "raw", "inside") as r:
+        with CustomRunner("mlt", "raw", "inside") as r:
             # initial check
             s_initial = esc(font_colors["white"])
             s_initial += esc(background_colors[DEFAULT_BACKGROUND])
             s_initial += "inside"
-            r.await_text(s_initial, 1)
+            r.await_ctext(s_initial, 1)
 
             # type i
             r.write("i")
@@ -99,11 +112,11 @@ class TestHecate:
             s += "i"
             s += esc(font_colors["white"])
             s = "nside"
-            r.await_text(s, 1)
+            r.await_ctext(s, 1)
 
             # backspace
             r.press("BSpace")
-            r.await_text(s_initial, 1)
+            r.await_ctext(s_initial, 1)
 
             # type insa
             r.write("insa")
@@ -115,10 +128,10 @@ class TestHecate:
             s += "i"
             s += esc(background_colors[DEFAULT_BACKGROUND])
             s += "de"
-            r.await_text(s, 1)
+            r.await_ctext(s, 1)
 
             # Finalize
             r.press("BSpace")
             r.write("ide")
 
-            r.await_text("== Statistics ==")
+            r.await_ctext("== Statistics ==")
