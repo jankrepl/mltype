@@ -54,12 +54,12 @@ class CustomRunner(hecate.hecate.Runner):
 
     def get_cursor_position(self):
         """Get current position of the cursor."""
+        x_s, y_s = self.tmux.execute_command("display",
+                                         "-t0",
+                                         "-p",
+                                         "#{cursor_x}\t#{cursor_y}").split()
+        return int(x_s), int(y_s)
 
-    def get_line(self, i):
-        """Get all the text on a given line."""
-
-    def resize(self, height, width):
-        """Resize the pane"""
 
 def capture_pane_color(self, pane):
     """Screenshot the entire tmux pane with colors.
@@ -95,10 +95,9 @@ def test_strip(monkeypatch):
 
 
 class TestHecate:
-    @pytest.mark.skipif(not RUN_HECATE, reason="Hecate is not installed")
     def test_basic(self, monkeypatch):
-
         with CustomRunner("mlt", "raw", "inside") as r:
+            assert r.get_cursor_position() == (0, 0)
             # initial check
             s_initial = esc(font_colors["white"])
             s_initial += esc(background_colors[DEFAULT_BACKGROUND])
@@ -113,10 +112,12 @@ class TestHecate:
             s += esc(font_colors["white"])
             s = "nside"
             r.await_ctext(s, 1)
+            assert r.get_cursor_position() == (1, 0)
 
             # backspace
             r.press("BSpace")
             r.await_ctext(s_initial, 1)
+            assert r.get_cursor_position() == (0, 0)
 
             # type insa
             r.write("insa")
@@ -129,6 +130,7 @@ class TestHecate:
             s += esc(background_colors[DEFAULT_BACKGROUND])
             s += "de"
             r.await_ctext(s, 1)
+            assert r.get_cursor_position() == (4, 0)
 
             # Finalize
             r.press("BSpace")
