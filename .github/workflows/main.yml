@@ -21,13 +21,11 @@ jobs:
 
     - name: Install MacOS dependencies
       if: matrix.os == "macoos-latest"
-      run: |
-	brew install tmux
+      run: brew install tmux
 
     - name: Install Linux dependencies
       if: matrix.os == "ubuntu-latest"
-      run: |
-	apt install tmux
+      run: apt install tmux
 
     - name: Install Python dependencies
       run: |
