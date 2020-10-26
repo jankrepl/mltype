@@ -33,6 +33,7 @@ setup(
             "pytest-coverage",
             "tox",
         ],
+        "hecate": ["hecate@git+http://github.com/DRMacIver/hecate#25f3260"],
         "mlflow": ["mlflow<=1.10.0"],
     },
     entry_points={

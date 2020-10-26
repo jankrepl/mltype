@@ -2,7 +2,11 @@
 from datetime import datetime
 from unittest.mock import Mock, MagicMock
 
-import hecate.hecate
+try:
+    import hecate.hecate
+except ImportError:
+    hecate = Mock()
+
 import pytest
 
 from mltype.base import TypedText
@@ -118,6 +122,7 @@ def test_strip(monkeypatch):
     fake_text.rstrip.assert_called_once()
 
 
+@pytest.mark.skipif(isinstance(hecate, Mock), reason="Hecate is not installed")
 class TestHecate:
     def test_basic(self):
         with CustomRunner("mlt", "raw", "inside") as r:
