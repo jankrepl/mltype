@@ -20,11 +20,11 @@ jobs:
         python-version: ${{ matrix.python-version }}
 
     - name: Install MacOS dependencies
-      if: matrix.os == "macoos-latest"
+      if: contains(matrix.os, "macoos")
       run: brew install tmux
 
     - name: Install Linux dependencies
-      if: matrix.os == "ubuntu-latest"
+      if: contains(matrix.os, "ubuntu")
       run: apt install tmux
 
     - name: Install Python dependencies
