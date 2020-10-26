@@ -128,12 +128,13 @@ def test_strip(monkeypatch):
 class TestHecate:
     def test_basic(self):
         with CustomRunner("mlt", "raw", "inside") as r:
+            to = 2
             assert r.get_cursor_position() == (0, 0)
             # initial check
             s_initial = esc(font_colors["white"])
             s_initial += esc(background_colors[DEFAULT_BACKGROUND])
             s_initial += "inside"
-            r.await_ctext(s_initial, 1)
+            r.await_ctext(s_initial, to)
 
             # type i
             r.write("i")
@@ -141,12 +142,12 @@ class TestHecate:
             s += "i"
             s += gen_fb("white")
             s = "nside"
-            r.await_ctext(s, 1)
+            r.await_ctext(s, to)
             assert r.get_cursor_position() == (1, 0)
 
             # backspace
             r.press("BSpace")
-            r.await_ctext(s_initial, 1)
+            r.await_ctext(s_initial, to)
             assert r.get_cursor_position() == (0, 0)
 
             # type insa
@@ -157,7 +158,7 @@ class TestHecate:
             s += "i"
             s += gen_fb(None, DEFAULT_BACKGROUND)
             s += "de"
-            r.await_ctext(s, 1)
+            r.await_ctext(s, to)
             assert r.get_cursor_position() == (4, 0)
 
             # Finalize
@@ -168,11 +169,12 @@ class TestHecate:
 
     def test_target_speed(self):
         with CustomRunner("mlt", "raw", "hello", "-t", "120") as r:
+            to = 2
             r.await_ctext(gen_fb("white", DEFAULT_BACKGROUND) + "hello")
             assert r.get_cursor_position() == (0, 0)
 
             r.press("BSpace")  # this triggers the marker
-            r.await_ctext(esc(background_colors["magenta"]))
+            r.await_ctext(esc(background_colors["magenta"]), to)
 
             all_ss = r.record_cscreenshots(0.5)
 
