@@ -51,8 +51,10 @@ def gen_fb(font=None, background=None):
 
     return s
 
+
 class CustomRunner(hecate.hecate.Runner):
     """Add convenience methods and color screenshotting."""
+
     def await_ctext(self, text, timeout=None):
         for _ in self.poll_until_timeout(timeout):
             screen = self.cscreenshot()
@@ -68,10 +70,9 @@ class CustomRunner(hecate.hecate.Runner):
 
     def get_cursor_position(self):
         """Get current position of the cursor."""
-        x_s, y_s = self.tmux.execute_command("display",
-                                         "-t0",
-                                         "-p",
-                                         "#{cursor_x}\t#{cursor_y}").split()
+        x_s, y_s = self.tmux.execute_command(
+            "display", "-t0", "-p", "#{cursor_x}\t#{cursor_y}"
+        ).split()
         return int(x_s), int(y_s)
 
     def record_cscreenshots(self, n_seconds=1, pane=0):
@@ -163,7 +164,6 @@ class TestHecate:
             r.await_ctext(gen_fb("white", DEFAULT_BACKGROUND) + "hello")
             assert r.get_cursor_position() == (0, 0)
 
-
             r.press("BSpace")  # this triggers the marker
             r.await_ctext(esc(background_colors["magenta"]))
 
@@ -173,4 +173,3 @@ class TestHecate:
             assert len(all_ss) == 4
             l = [esc(background_colors["magenta"]) in x for x in all_ss]
             assert all(l)
-
