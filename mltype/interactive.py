@@ -14,16 +14,6 @@ class Cursor:
     def __init__(self, stdscr):
         self.stdscr = stdscr
 
-    @property
-    def pos(self):
-        """Get current position (x, y) of the cursors."""
-        return self.stdscr.getyx()
-
-    def get_char(self):
-        """Get the character the cursor is standing on."""
-        y, x = self.pos
-        return chr(self.stdscr.inch(y, x) & 0xFF)
-
     def move_abs(self, y, x):
         """Move absolutely to cooordinates.
 
@@ -40,40 +30,6 @@ class Cursor:
         delta_y, new_x = divmod(x, max_x)
         new_y = max(y + delta_y, 0)
         self.stdscr.move(new_y, new_x)
-
-    def move_rel(self, delta_y, delta_x):
-        """Move relative to the current cursor.
-
-        Parameters
-        ----------
-        delta_y, delta_x : int
-            Relative shifts in a respective direction
-        """
-        y, x = self.pos
-        self.move_abs(y + delta_y, x + delta_x)
-
-    def jump_line_start(self):
-        """Jump to the start of the line."""
-        y, _ = self.pos
-
-        self.move_abs(y, 0)
-
-    def jump_start(self):
-        """Jump to the start of the window (upper left)."""
-        self.move_abs(0, 0)
-
-    def jump_end(self):
-        """Jump the the end of the window (bottom right)."""
-        height, width = self.stdscr.getmaxyx()
-        self.move_abs(height - 1, width - 1)
-
-    def new_line(self, n=1):
-        """Shift by n rows."""
-        self.move_rel(n, 0)
-
-    def shift(self, n=1):
-        """Shift by n columns."""
-        self.move_rel(0, n)
 
 
 class Pen:
@@ -101,22 +57,6 @@ class Pen:
             Single element string representing the character.
         """
         stdscr.addch(y, x, text, curses.color_pair(self.i))
-
-    def addstr(self, stdscr, y, x, text):
-        """Add string.
-
-        Parameters
-        ----------
-        stdscr : curses.Window
-            Window in which we add the character.
-
-        y, x : int
-            Position of the character.
-
-        text : str
-            The string to be added.
-        """
-        stdscr.addstr(y, x, text, curses.color_pair(self.i))
 
     def _register(self):
         """Register colors with curses."""
