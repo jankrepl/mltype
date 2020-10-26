@@ -25,7 +25,7 @@ jobs:
 
     - name: Install Linux dependencies
       if: contains(matrix.os, 'ubuntu')
-      run: apt install tmux
+      run: sudo apt-get install tmux
 
     - name: Install Python dependencies
       run: |
