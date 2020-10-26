@@ -386,8 +386,8 @@ class SingleCharacterLSTM(pl.LightningModule):
     Given some string of characters, we generate the probability distribution
     of the next character.
 
-    The architecture starts with an LSTM (`hidden_size`, `n_layers`,
-     `vocab_size`) network and then we feed the last hidden state to a fully
+    Architecture starts with an LSTM (`hidden_size`, `n_layers`, `vocab_size`)
+    network and then we feed the last hidden state to a fully
     connected network with one hidden layer (`dense_size`).
 
     Parameters
@@ -613,7 +613,7 @@ def run_train(
 
     Note that the parameters are also explained in the cli of `mlt train`.
 
-    Paramaters
+    Parameters
     ----------
     texts : list
         List of str representing all texts we would like to train on.
