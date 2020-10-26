@@ -64,7 +64,9 @@ class CustomRunner(hecate.hecate.Runner):
             screen = self.cscreenshot()
             if text in screen:
                 return
-        raise Timeout("Timeout while waiting for text %r to appear" % (text,))
+        raise hecate.hecate.Timeout(
+            "Timeout while waiting for text %r to appear" % (text,)
+        )
 
     def cscreenshot(self, pane=0):
         """Screenshot with color."""
@@ -176,5 +178,4 @@ class TestHecate:
 
             # the first one is excluded because the cursor is there
             assert len(all_ss) == 4
-            l = [esc(background_colors["magenta"]) in x for x in all_ss]
-            assert all(l)
+            assert all(esc(background_colors["magenta"]) in x for x in all_ss)
