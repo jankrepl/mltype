@@ -54,7 +54,7 @@ def cli():  # noqa: D400
     "-s",
     "--start-line",
     type=int,
-    help="the start line of the excerpt to use. needs to be used together "
+    help="The start line of the excerpt to use. needs to be used together "
     "with end-line.",
 )
 @click.option(
@@ -81,7 +81,7 @@ def file(
     target_wpm,
     include_whitespace,
 ):  # noqa: D400
-    """Type text from a file."""  # noqa: D400
+    """Type text from a file"""  # noqa: D400
     import numpy as np
 
     from mltype.interactive import main_basic
@@ -182,7 +182,7 @@ def ls():  # noqa: D400
     "--fill-strategy",
     type=str,
     default="skip",
-    help="Either zeros or skip. Determines how deal with out of vocabulary "
+    help="Either zeros or skip. Determines how to deal with out of vocabulary "
     "characters",
     show_default=True,
 )
@@ -205,7 +205,7 @@ def ls():  # noqa: D400
     "-i",
     "--illegal-chars",
     type=str,
-    help="Characters to exclude from the vocabulary.",
+    help="Characters to exclude from the vocabulary",
     show_default=True,
 )
 @click.option(
@@ -382,7 +382,7 @@ def train(
 def random(
     characters, force_perfect, instant_death, n_chars, output_file, target_wpm
 ):  # noqa: D400
-    """Sample characters randomly from a provided vocabulary"""
+    """Sample characters randomly from a vocabulary"""
     import numpy as np
 
     from mltype.interactive import main_basic
@@ -428,7 +428,7 @@ def random(
     "-r",
     "--raw-string",
     is_flag=True,
-    help="If active, then newlines and tabs are not not special characters",
+    help="If active, then newlines and tabs are not seen as special characters",
 )
 @click.option(
     "-t",
@@ -476,7 +476,9 @@ def raw(
     type=int,
     help="The desired speed to be shown as a guide",
 )
-@click.option("-w", "--overwrite", is_flag=True)
+@click.option(
+    "-w", "--overwrite", is_flag=True, help="Overwrite in place if faster"
+)
 def replay(
     replay_file, force_perfect, instant_death, overwrite, target_wpm
 ):  # noqa: D400

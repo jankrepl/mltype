@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 
 import mltype
 
-DESCRIPTION = ""
+DESCRIPTION = "Command line tool for improving typing skills"
 LONG_DESCRIPTION = DESCRIPTION
 
 INSTALL_REQUIRES = [
