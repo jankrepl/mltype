@@ -17,7 +17,7 @@ and accuracy. It does so with a tiny bit of deep learning.
 
    source/installation
    source/cli
-   source/python_interface
+   source/examples
 
 .. toctree::
    :maxdepth: 2
