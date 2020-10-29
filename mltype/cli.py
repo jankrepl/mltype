@@ -81,7 +81,7 @@ def file(
     target_wpm,
     include_whitespace,
 ):  # noqa: D400
-    """Type text from a file."""  # noqa: D400
+    """Type text from a file"""  # noqa: D400
     import numpy as np
 
     from mltype.interactive import main_basic
@@ -382,7 +382,7 @@ def train(
 def random(
     characters, force_perfect, instant_death, n_chars, output_file, target_wpm
 ):  # noqa: D400
-    """Sample characters randomly from a provided vocabulary"""
+    """Sample characters randomly from a vocabulary"""
     import numpy as np
 
     from mltype.interactive import main_basic

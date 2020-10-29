@@ -1,6 +1,7 @@
 <p align="center">
   <img src="https://user-images.githubusercontent.com/18519371/97606153-c19c2700-1a0f-11eb-9faf-876f266b4585.png">
 </p>
+![mltype](https://github.com/jankrepl/mltype/workflows/mltype/badge.svg)
 
 Command line tool for improving typing speed and accuracy. The main goal is
 to help programmers practise programming languages.
@@ -23,8 +24,29 @@ to help programmers practise programming languages.
 - Setting target speed
 - Playing against past performances
 
-# Documentation
-For more detailed information see https://mltype.readthedocs.io. 
+# Documentation and usage
+For a detailed documentation see https://mltype.readthedocs.io. 
+
+The entrypoint is `mlt`
+
+```bash
+$ mlt
+Usage: mlt [OPTIONS] COMMAND [ARGS]...
+
+  Tool for improving typing speed and accuracy
+
+Options:
+  --help  Show this message and exit.
+
+Commands:
+  file    Type text from a file
+  ls      List all language models
+  random  Sample characters randomly from a vocabulary
+  raw     Provide text manually
+  replay  Compete against a past performance
+  sample  Sample text from a language
+  train   Train a language
+```
 
 # Pretrained models
 
@@ -45,6 +67,7 @@ can be changed to whatevery you like. This name will then be used to
 refer to the model.
 
 To verify that the model was downloaded succesfully, try to sample from it.
+Note that this might take 20+ seconds the first time around.
 
 ```bash
 mlt sample my_new_model
