@@ -40,7 +40,7 @@ For more detailed information see https://mltype.readthedocs.io.
 | Scikit-learn         	| Trained on https://github.com/scikit-learn/scikit-learn         	| [link](https://drive.google.com/file/d/1Hl_DcXOSH8B6IxJ9fHBmoSkEOXFQ1q86/view?usp=sharing) 	|
 
 
-Once you download the file, you will need to place it in `~/.mltype/langagues`. 
+Once you download the file, you will need to place it in `~/.mltype/languages`.
 Note that if the folder does not exist you will have to create it. The file name
 can be changed to whatevery you like. This name will then be used to
 refer to the model.
