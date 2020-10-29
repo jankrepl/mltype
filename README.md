@@ -50,6 +50,8 @@ Commands:
 ```
 
 # Pretrained models
+See below a list of pretrained models. They are stored on a google drive
+and one needs to download the entire archive.
 
 |         Name         	|                               Info                              	| Link                                                                                       	|
 |:--------------------:	|:---------------------------------------------------------------:	|--------------------------------------------------------------------------------------------	|

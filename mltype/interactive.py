@@ -58,6 +58,22 @@ class Pen:
         """
         stdscr.addch(y, x, text, curses.color_pair(self.i))
 
+    def addstr(self, stdscr, y, x, text):
+        """Add a string.
+
+        Parameters
+        ----------
+        stdscr : curses.Window
+            Window in which we add the character.
+
+        y, x : int
+            Position of the string.
+
+        text : str
+            String to put to the screen.
+        """
+        stdscr.addstr(y, x, text, curses.color_pair(self.i))
+
     def _register(self):
         """Register colors with curses."""
         curses.init_pair(self.i, self.font, self.background)
@@ -219,7 +235,7 @@ class TypedTextWriter:
             # no key typed:
             return
 
-        elif char_typed_ in {127, curses.KEY_BACKSPACE}:
+        elif char_typed_ in {8, 127, curses.KEY_BACKSPACE}:
             try:
                 self.tt.type_character(self.current_ix)
             except IndexError:
