@@ -235,7 +235,7 @@ class TypedTextWriter:
             # no key typed:
             return
 
-        elif char_typed_ in {127, curses.KEY_BACKSPACE}:
+        elif char_typed_ in {8, 127, curses.KEY_BACKSPACE}:
             try:
                 self.tt.type_character(self.current_ix)
             except IndexError:
