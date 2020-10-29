@@ -268,7 +268,7 @@ class TypedText:
             self.actions[i].append(Action(ch, STATUS_WRONG, ts))
 
         # check whether finished
-        if self.check_finished():
+        if self.check_finished(force_perfect=False):
             self.end_ts = ts
 
     def unroll_actions(self):

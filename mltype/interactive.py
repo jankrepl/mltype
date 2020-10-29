@@ -360,9 +360,6 @@ def main_replay(
     replay_file = pathlib.Path(replay_file)
     replay_tt = TypedText.load(replay_file)
 
-    if not replay_tt.check_finished():
-        raise ValueError("The checkpoint file contains unfinished text")
-
     tt = curses.wrapper(
         run_loop,
         replay_tt.text,
