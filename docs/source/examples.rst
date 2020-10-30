@@ -71,3 +71,21 @@ predictions are.
 .. image:: https://i.imgur.com/rDiKmvJ.gif
     :align: center
 
+Provide initial text for sampling
+---------------------------------
+The :code:`sample` provides an option :code:`-s, --starting-text`
+through which one can specify the starting text. This
+way one can decide roughly on the topic of the text.
+
+.. image:: https://i.imgur.com/uz1046g.gif
+    :align: center
+
+Independent generation of characters
+------------------------------------
+The :code:`random` command allows for generating of random
+characters based on provided frequency distribution. Note
+that as opposed to :code:`sample` the previous characters
+are not taken into account when generating a new one.
+
+.. image:: https://i.imgur.com/ILmyQ5w.gif
+    :align: center
