@@ -31,8 +31,8 @@ pip install --upgrade mltype
 - Playing against past performances
 
 # Documentation and usage
-For a detailed documentation see https://mltype.readthedocs.io/en/latest/index.html.
-For more examples see https://mltype.readthedocs.io/en/latest/source/examples.html. 
+- Detailed documentation: https://mltype.readthedocs.io/en/latest/index.html.
+- GIF examples: https://mltype.readthedocs.io/en/latest/source/examples.html. 
 
 The entrypoint is `mlt`
 
