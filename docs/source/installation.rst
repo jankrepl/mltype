@@ -27,5 +27,10 @@ One can use the following sytax to install extra dependencies
 Below are the available groups with
 
 * :code:`dev` - development tools
-* :code:`hecate` - tools for running optional curses tests
 * :code:`mlflow` - optional tracking tool to visualize training progress
+
+Note that for some tests (optional) we use :code:`hecate`. To install it run
+
+.. code-block:: bash
+
+    pip install hecate@git+http://github.com/DRMacIver/hecate#25f3260

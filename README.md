@@ -76,7 +76,7 @@ can be changed to whatevery you like. This name will then be used to
 refer to the model.
 
 To verify that the model was downloaded succesfully, try to sample from it.
-Note that this might take 20+ seconds the first time around.
+**Note that this might take 20+ seconds the first time around.**
 
 ```bash
 mlt sample my_new_model
