@@ -9,7 +9,7 @@ to help programmers practise programming languages.
 
 # Demo
 <p align="center">
-  <img src="https://i.imgur.com/Gdmctcl.gif">
+  <img src="https://i.imgur.com/uz1046g.gif">
 </p>
 
 # Installation
