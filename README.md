@@ -12,6 +12,11 @@ to help programmers practise programming languages.
   <img src="https://i.imgur.com/Gdmctcl.gif">
 </p>
 
+# Installation
+```bash
+pip install --upgrade mltype
+```
+
 # Main features
 ### Text generation
 
@@ -26,7 +31,8 @@ to help programmers practise programming languages.
 - Playing against past performances
 
 # Documentation and usage
-For a detailed documentation see https://mltype.readthedocs.io. 
+- Detailed documentation: https://mltype.readthedocs.io/en/latest/index.html.
+- GIF examples: https://mltype.readthedocs.io/en/latest/source/examples.html. 
 
 The entrypoint is `mlt`
 
@@ -70,8 +76,12 @@ can be changed to whatevery you like. This name will then be used to
 refer to the model.
 
 To verify that the model was downloaded succesfully, try to sample from it.
-Note that this might take 20+ seconds the first time around.
+**Note that this might take 20+ seconds the first time around.**
 
 ```bash
 mlt sample my_new_model
 ```
+
+# Credits
+This project is very much motivated by the The Unreasonable Effectiveness of 
+Recurrent Neural Networks by Andrej Karpathy.
