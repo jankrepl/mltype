@@ -89,3 +89,13 @@ are not taken into account when generating a new one.
 
 .. image:: https://i.imgur.com/ILmyQ5w.gif
     :align: center
+
+Reading from a file with whitespace
+-----------------------------------
+Text files often contain a lot of whitespace characters (new lines, tabs,...).
+One can use the command :code:`file` to read from a file and the option
+:code:`-w, --include-whitespace` option to control whether whitespace is
+going to be removed or not.
+
+.. image:: https://i.imgur.com/gYXZHnE.gif
+    :align: center
