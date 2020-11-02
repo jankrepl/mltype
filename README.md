@@ -57,7 +57,7 @@ Commands:
 ```
 
 # Pretrained models
-See below a list of pretrained models. They are stored on a google drive
+See below for a list of pretrained models. They are stored on a google drive
 and one needs to download the entire archive.
 
 |         Name         	|                               Info                              	| Link                                                                                       	|
@@ -76,7 +76,7 @@ and one needs to download the entire archive.
 
 Once you download the file, you will need to place it in `~/.mltype/languages`.
 Note that if the folder does not exist you will have to create it. The file name
-can be changed to whatevery you like. This name will then be used to
+can be changed to whatever you like. This name will then be used to
 refer to the model.
 
 To verify that the model was downloaded succesfully, try to sample from it.
