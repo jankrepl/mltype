@@ -67,10 +67,12 @@ and one needs to download the entire archive.
 | Crime and Punishment 	| Trained on http://www.gutenberg.org/ebooks/2554                 	| [link](https://drive.google.com/file/d/1-KgO-9X3z-Xr2SLAgAI_Ijllw7L9MFpN/view?usp=sharing) 	|
 | Dracula              	| Trained on http://www.gutenberg.org/ebooks/345                  	| [link](https://drive.google.com/file/d/1Fx2cZ4gOaioJymsUCY_Q620Yk53bZQeK/view?usp=sharing) 	|
 | Go            	| Trained on https://github.com/TheAlgorithms/Go    	                | [link](https://drive.google.com/file/d/1VOw0zCa4xRgfeRz41loPkQRwcWadeV-o/view?usp=sharing) 	|
+| Haskell            	| Trained on https://github.com/jgm/pandoc      	                | [link](https://drive.google.com/file/d/16IAu3iMhuHIyiYsw6OwkCKtBy3qOVWd0/view?usp=sharing) 	|
 | Java            	| Trained on https://github.com/TheAlgorithms/Java    	                | [link](https://drive.google.com/file/d/1-08erirNC1GbuRLcFzQIfjwbhB40_wiA/view?usp=sharing) 	|
 | JavaScript           	| Trained on https://github.com/trekhleb/javascript-algorithms    	| [link](https://drive.google.com/file/d/1npW4YN7y2d4Id0WhXVnT_0--slmPEfW0/view?usp=sharing) 	|
 | Python               	| Trained on https://github.com/TheAlgorithms/Python              	| [link](https://drive.google.com/file/d/14W-Ymi-h6jqNyqM5yGXyzwG25J3zzdn3/view?usp=sharing) 	|
 | R               	| Trained on https://github.com/tidyverse/ggplot2              	        | [link](https://drive.google.com/file/d/1TgZojc2--ej4UC1ksAShDLUtDBWYf7xQ/view?usp=sharing) 	|
+| Rust               	| Trained on https://github.com/rust-lang/rust/tree/master/compiler     | [link](https://drive.google.com/file/d/1CpzIs4EytZGfij7v-oltKGg4q8uepfVI/view?usp=sharing) 	|
 | Scikit-learn         	| Trained on https://github.com/scikit-learn/scikit-learn         	| [link](https://drive.google.com/file/d/1Hl_DcXOSH8B6IxJ9fHBmoSkEOXFQ1q86/view?usp=sharing) 	|
 
 
