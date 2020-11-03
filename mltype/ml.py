@@ -802,7 +802,7 @@ def run_train(
             logger=logger,
             callbacks=callbacks,
             checkpoint_callback=chp_callback,
-            replace_sampler_ddp=False
+            replace_sampler_ddp=False,
         )
         trainer.fit(network, dataloader_t, dataloader_v)
 
