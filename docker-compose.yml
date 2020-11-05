@@ -1,0 +1,8 @@
+version: "3.8"
+
+services:
+  mltype:
+    build: .
+    image: mltype_img
+    volumes:
+        - $HOME:/root
