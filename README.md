@@ -74,7 +74,9 @@ and one needs to download the entire archive.
 | PHP           	| Trained on https://github.com/symfony/symfony    	                | [link](https://drive.google.com/file/d/17xl168mPjeL1w8-k195RDPavOxZWUY96/view?usp=sharing) 	|
 | Python               	| Trained on https://github.com/TheAlgorithms/Python              	| [link](https://drive.google.com/file/d/14W-Ymi-h6jqNyqM5yGXyzwG25J3zzdn3/view?usp=sharing) 	|
 | R               	| Trained on https://github.com/tidyverse/ggplot2              	        | [link](https://drive.google.com/file/d/1TgZojc2--ej4UC1ksAShDLUtDBWYf7xQ/view?usp=sharing) 	|
+| Ruby               	| Trained on https://github.com/jekyll/jekyll              	        | [link](https://drive.google.com/file/d/1UMhlpI9a4Fpni1k1jQrePa8NOD8n6urq/view?usp=sharing) 	|
 | Rust               	| Trained on https://github.com/rust-lang/rust/tree/master/compiler     | [link](https://drive.google.com/file/d/1CpzIs4EytZGfij7v-oltKGg4q8uepfVI/view?usp=sharing) 	|
+| Scala               	| Trained on https://github.com/apache/spark/tree/master/mllib          | [link](https://drive.google.com/file/d/1ojYNJOIvWjPO3Nc9BCcY_NRrxyumAKeh/view?usp=sharing) 	|
 | Scikit-learn         	| Trained on https://github.com/scikit-learn/scikit-learn         	| [link](https://drive.google.com/file/d/1Hl_DcXOSH8B6IxJ9fHBmoSkEOXFQ1q86/view?usp=sharing) 	|
 
 
