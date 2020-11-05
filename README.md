@@ -13,9 +13,20 @@ to help programmers practise programming languages.
 </p>
 
 # Installation
+### Python environment
 ```bash
 pip install --upgrade mltype
 ```
+
+### Docker
+Make sure that Docker and Docker Compose are installed.
+```
+docker-compose run --rm mltype
+```
+You will get a shell in a running container and the `mlt` command should be
+available. 
+
+See the documentation for more information.
 
 # Main features
 ### Text generation
