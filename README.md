@@ -89,6 +89,7 @@ and one needs to download the entire archive.
 | Rust               	| Trained on https://github.com/rust-lang/rust/tree/master/compiler     | [link](https://drive.google.com/file/d/1CpzIs4EytZGfij7v-oltKGg4q8uepfVI/view?usp=sharing) 	|
 | Scala               	| Trained on https://github.com/apache/spark/tree/master/mllib          | [link](https://drive.google.com/file/d/1ojYNJOIvWjPO3Nc9BCcY_NRrxyumAKeh/view?usp=sharing) 	|
 | Scikit-learn         	| Trained on https://github.com/scikit-learn/scikit-learn         	| [link](https://drive.google.com/file/d/1Hl_DcXOSH8B6IxJ9fHBmoSkEOXFQ1q86/view?usp=sharing) 	|
+| Swift         	| Trained on https://github.com/raywenderlich/swift-algorithm-club      | [link](https://drive.google.com/file/d/1f6TQQL7lvWRlq7t17B0qn-fN0CRZU71h/view?usp=sharing) 	|
 
 
 Once you download the file, you will need to place it in `~/.mltype/languages`.
