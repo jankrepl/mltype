@@ -138,12 +138,13 @@ def test_ls(tmpdir, monkeypatch, dir_exists):
     ls = getattr(mltype.cli, "ls")
 
     new_home = pathlib.Path(str(tmpdir))
-    path_languages = new_home / ".mltype" / "languages"
+    path_cache = new_home / ".mltype"
+    path_languages = path_cache / "languages"
 
     if dir_exists:
         path_languages.mkdir(parents=True)
 
-    monkeypatch.setenv("HOME", str(new_home))
+    monkeypatch.setattr("mltype.utils.get_cache_dir", lambda: path_cache)
 
     runner = CliRunner()
     result = runner.invoke(ls, [])
