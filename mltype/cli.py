@@ -590,10 +590,3 @@ def sample(
         instant_death=instant_death,
         target_wpm=target_wpm,
     )
-
-@cli.command()
-@click.argument("property")
-def config(property):
-    """config"""
-    from mltype.utils import get_cache_dir, get_config
-    print(get_config(get_cache_dir(), property))

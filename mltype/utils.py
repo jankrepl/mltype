@@ -25,7 +25,11 @@ def get_cache_dir(predefined_path=None):
     path : pathlib.Path
         Path to where the caching directory is located.
     """
-    path = pathlib.Path(get_config(predefined_path or pathlib.Path.home() / ".mltype", "cache_dir"))
+    if predefined_path is not None:
+        path = pathlib.Path(str(predefined_path))
+    else:
+        path = pathlib.Path.home() / ".mltype"
+
     path.mkdir(parents=True, exist_ok=True)
 
     return path
@@ -91,19 +95,3 @@ def print_section(name, fill_char="=", drop_end=False, add_ts=True):
 
     if not drop_end:
         print(width * fill_char)
-
-def get_config(path, property):
-    from configparser import ConfigParser
-    config_object = ConfigParser()
-    config_path = path / "config.ini"
-    if (config_path).is_file():
-        config_object.read(config_path)
-        return pathlib.Path(config_object["GENERAL"][property])
-    else:
-        config_object["GENERAL"] = {
-            "cache_dir": path
-        }
-        with open(config_path, 'w') as conf:
-            config_object.write(conf)
-        return path
-        
