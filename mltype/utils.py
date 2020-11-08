@@ -4,6 +4,8 @@ from datetime import datetime
 import pathlib
 import shutil
 
+CONFIG_FILE_PATH = None
+
 
 def get_cache_dir(predefined_path=None):
     """Get the cache directory path and potentially create it.
@@ -33,6 +35,17 @@ def get_cache_dir(predefined_path=None):
     path.mkdir(parents=True, exist_ok=True)
 
     return path
+
+
+def get_config_file_path():
+    """Get path to the configuration file."""
+    return CONFIG_FILE_PATH or get_cache_dir() / "config.ini"
+
+
+def set_config_file_path(path):
+    """Set path to the configuration file."""
+    global CONFIG_FILE_PATH
+    CONFIG_FILE_PATH = path
 
 
 def get_mlflow_artifacts_path(client, run_id):
