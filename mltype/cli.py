@@ -10,7 +10,6 @@ import click
 import click_config_file
 
 from mltype.utils import (
-    get_config_file,
     get_config_file_path,
     set_config_file_path,
 )
@@ -198,7 +197,7 @@ def file(
 @click_config_file.configuration_option(provider=provider, implicit=True)
 def ls():  # noqa: D400
     """List all language models"""
-    from mltype.utils import get_cache_dir
+    from mltype.utils import get_cache_dir, get_config_file
 
     cp = get_config_file()
     try:
@@ -643,11 +642,19 @@ def sample(
     sys.modules["mlflow"] = None
     from mltype.interactive import main_basic
     from mltype.ml import load_model, sample_text
-    from mltype.utils import get_cache_dir
+    from mltype.utils import get_cache_dir, get_config_file
 
-    model_folder = get_cache_dir() / "languages" / model_name
+    cp = get_config_file()
+    try:
+        predefined_path = cp["general"]["models_dir"]
+        languages_dir = get_cache_dir(predefined_path)
 
-    network, vocabulary = load_model(model_folder)
+    except KeyError:
+        languages_dir = get_cache_dir() / "languages"
+
+    model_path = languages_dir / model_name
+
+    network, vocabulary = load_model(model_path)
     text = sample_text(
         n_chars,
         network,

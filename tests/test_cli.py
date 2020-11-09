@@ -334,6 +334,7 @@ def test_replay(
 @pytest.mark.parametrize("random_state", [8])
 @pytest.mark.parametrize("use_long", [True, False])
 @pytest.mark.parametrize("target_wpm", [33])
+@pytest.mark.parametrize("from_config", [True, False])
 def test_sample(
     monkeypatch,
     force_perfect,
@@ -343,6 +344,7 @@ def test_sample(
     random_state,
     use_long,
     target_wpm,
+    from_config,
 ):
     # prevent parametrize from being huge
     verbose = True
@@ -354,10 +356,15 @@ def test_sample(
     fake_main_basic = Mock()
     fake_load_model = Mock(return_value=(Mock(), Mock()))
     fake_sample_text = Mock(return_value="amazing")
+    cp = {"general": {}}
+    if from_config:
+        cp["general"]["models_dir"] = "FoLdeR"
+    fake_get_config_file = Mock(return_value=cp)
 
     monkeypatch.setattr("mltype.interactive.main_basic", fake_main_basic)
     monkeypatch.setattr("mltype.ml.load_model", fake_load_model)
     monkeypatch.setattr("mltype.ml.sample_text", fake_sample_text)
+    monkeypatch.setattr("mltype.utils.get_config_file", fake_get_config_file)
 
     runner = CliRunner()
     options = [
@@ -380,6 +387,16 @@ def test_sample(
 
     assert result.exit_code == 0
 
+    # Check correct model used
+    fake_load_model.assert_called_once()
+    call_0 = fake_load_model.call_args
+
+    if from_config:
+        assert call_0[0][0] == pathlib.Path("FoLdeR/something")
+    else:
+        assert call_0[0][0] != pathlib.Path("FoLdeR/something")
+
+    # Check sample text
     fake_sample_text.assert_called_once()
 
     call_1 = fake_sample_text.call_args
