@@ -710,4 +710,4 @@ class TestConfigFile:
 
         assert fake_main_basic.call_count == 7
         kwargs_7 = fake_main_basic.call_args[1]
-        assert kwargs_7["target_wpm"] is 22  # that is the default
+        assert kwargs_7["target_wpm"] == 22  # that is the default
