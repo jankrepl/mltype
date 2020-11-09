@@ -134,18 +134,36 @@ def test_file(
     }
 
 
+@pytest.mark.parametrize("from_config", [True, False])
 @pytest.mark.parametrize("dir_exists", [True, False])
-def test_ls(tmpdir, monkeypatch, dir_exists):
+def test_ls(tmpdir, monkeypatch, dir_exists, from_config):
+    # tmpdir
+    # ---- .mltype/
+    # --------- config.ini  # if from_config
+    # --------- custom/  # if from_config and dir_exists
+    # --------- langugages/  # if not from_config and dir_exists
     ls = getattr(mltype.cli, "ls")
 
-    new_home = pathlib.Path(str(tmpdir))
-    path_cache = new_home / ".mltype"
-    path_languages = path_cache / "languages"
+    tmpdir = pathlib.Path(str(tmpdir))
+    path_cache = tmpdir / ".mltype"
+    path_models = path_cache / ("custom" if from_config else "languages")
+
+    path_cache.mkdir()
 
     if dir_exists:
-        path_languages.mkdir(parents=True)
+        path_models.mkdir(parents=True)
 
-    monkeypatch.setattr("mltype.utils.get_cache_dir", lambda: path_cache)
+    if from_config:
+        path_config = path_cache / "config.ini"
+        with path_config.open("w") as f:
+            cp = ConfigParser()
+            cp["general"] = {"models_dir": str(path_models)}
+            cp.write(f)
+
+    def fake_get_cache_dir(path=None):
+        return pathlib.Path(path) if path is not None else path_cache
+
+    monkeypatch.setattr("mltype.utils.get_cache_dir", fake_get_cache_dir)
 
     runner = CliRunner()
     result = runner.invoke(ls, [])
@@ -156,9 +174,9 @@ def test_ls(tmpdir, monkeypatch, dir_exists):
     if not dir_exists:
         return
 
-    (path_languages / "a").touch()
-    (path_languages / "b").touch()
-    (path_languages / "c").mkdir()
+    (path_models / "a").touch()
+    (path_models / "b").touch()
+    (path_models / "c").mkdir()
 
     result = runner.invoke(ls, [])
 
@@ -619,7 +637,6 @@ class TestConfigFile:
         assert fake_main_basic.call_count == 4
         kwargs_4 = fake_main_basic.call_args[1]
         assert kwargs_4["target_wpm"] == 13
-
 
         # Experiment 5 - misspelled in config (taking a default)
         config_file_path.unlink()  # just to make it explicit

@@ -9,7 +9,11 @@ import sys
 import click
 import click_config_file
 
-from mltype.utils import get_config_file_path, set_config_file_path
+from mltype.utils import (
+    get_config_file,
+    get_config_file_path,
+    set_config_file_path,
+)
 
 warnings.filterwarnings("ignore")
 
@@ -59,11 +63,11 @@ def provider(file_path, cmd_name):
         # Redefine actual config file path for non-CLI settings
         set_config_file_path(used_path)
 
-    config = ConfigParser()
-    config.read(used_path)
+    cp = ConfigParser()
+    cp.read(used_path)
 
-    if cmd_name in config.sections():
-        return dict(config[cmd_name])
+    if cmd_name in cp.sections():
+        return dict(cp[cmd_name])
     else:
         return {}
 
@@ -196,7 +200,13 @@ def ls():  # noqa: D400
     """List all language models"""
     from mltype.utils import get_cache_dir
 
-    languages_dir = get_cache_dir() / "languages"
+    cp = get_config_file()
+    try:
+        predefined_path = cp["general"]["models_dir"]
+        languages_dir = get_cache_dir(predefined_path)
+
+    except KeyError:
+        languages_dir = get_cache_dir() / "languages"
 
     if not languages_dir.exists():
         return

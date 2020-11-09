@@ -1,4 +1,5 @@
 """Collection of utility functions."""
+from configparser import ConfigParser
 from contextlib import contextmanager
 from datetime import datetime
 import pathlib
@@ -37,14 +38,38 @@ def get_cache_dir(predefined_path=None):
     return path
 
 
+def get_config_file():
+    """Get config file.
+
+    Returns
+    -------
+    ConfigParser
+        Instance of the configuration parser.
+    """
+    cp = ConfigParser()
+    cp.read(get_config_file_path())  # if file does not exist no error
+
+    return cp
+
+
 def get_config_file_path():
-    """Get path to the configuration file."""
+    """Get path to the configuration file.
+
+    Returns
+    -------
+    pathlib.Path
+        Position of the configuration file. Note that
+        it will depend on the global variable `CONFIG_FILE_PATH`
+        that can get modified by the CLI. However, by default
+        we put it into `~/.mltype/config.ini`.
+
+    """
     return CONFIG_FILE_PATH or get_cache_dir() / "config.ini"
 
 
 def set_config_file_path(path):
     """Set path to the configuration file."""
-    global CONFIG_FILE_PATH
+    global CONFIG_FILE_PATH  # oops, did not find a better solution
     CONFIG_FILE_PATH = path
 
 
