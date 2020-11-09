@@ -47,12 +47,13 @@ def provider(file_path, cmd_name):
     if provided_path == default_click_path:
         # The user did not provide custom config file via --config
         used_path = get_config_file_path()
+        set_config_file_path(None)  # None == defaulting to cache dir
         if not used_path.exists():
             return {}
     else:
         # The user did provide custom config file via --config
         used_path = provided_path
-        # Enfore existance of custom config file
+        # Enforce existence of custom config file
         if not used_path.exists():
             raise FileNotFoundError("The configuration file not found.")
         # Redefine actual config file path for non-CLI settings

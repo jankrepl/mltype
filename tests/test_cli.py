@@ -1,4 +1,5 @@
 """Collections of tests of the CLI."""
+from configparser import ConfigParser
 import pathlib
 from unittest.mock import Mock
 
@@ -489,3 +490,190 @@ def test_train(
         vocab_size=vocab_size,
         window_size=window_size,
     )
+
+
+class TestConfigFile:
+    def test_nonexistent_config(self, tmpdir):
+        """Get an error when the custom config file does not exist.
+
+        Only run for ls but the logic is similar for all of them.
+        """
+        config_path = pathlib.Path(tmpdir) / "config.ini"
+
+        ls_fun = getattr(mltype.cli, "ls")
+        runner = CliRunner()
+        result = runner.invoke(ls_fun, [f"--config={config_path}"])
+        assert result.exit_code != 0
+
+        config_path.touch()
+        result = runner.invoke(ls_fun, [f"--config={config_path}"])
+        assert result.exit_code == 0
+
+    def test_implicit_goes_to_cache_dir(self, monkeypatch, tmpdir):
+        """Check not providing config explicitly defaults to cache dir.
+
+        Only run for ls but the logic is similar for all of them.
+        """
+        cache_dir = pathlib.Path(str(tmpdir)) / ".mltype"
+        monkeypatch.setattr("mltype.utils.get_cache_dir", lambda: cache_dir)
+
+        ls_fun = getattr(mltype.cli, "ls")
+        runner = CliRunner()
+        result = runner.invoke(ls_fun, [])
+
+        assert result.exit_code == 0
+
+    @pytest.mark.parametrize("location", ["inside_cache", "outside_cache"])
+    def test_overall(self, location, monkeypatch, tmpdir):
+        """Check whether the readinig of config parameters works.
+
+        Done with raw however kind of covers all.
+        """
+        # Path preparations
+        tmpdir = pathlib.Path(str(tmpdir))
+        cache_dir = tmpdir / "cache_dir"
+        other_dir = tmpdir / "other"
+
+        cache_dir.mkdir()
+        other_dir.mkdir()
+
+        if location == "inside_cache":
+            config_file_path = cache_dir / "config.ini"
+        elif location == "outside_cache":
+            config_file_path = other_dir / "config.ini"
+        else:
+            raise ValueError()
+
+        config_file_path.touch()
+
+        # More preparations
+        monkeypatch.setattr("mltype.utils.get_cache_dir", lambda: cache_dir)
+
+        raw_fn = getattr(mltype.cli, "raw")
+
+        fake_main_basic = Mock()
+
+        monkeypatch.setattr("mltype.interactive.main_basic", fake_main_basic)
+
+        runner = CliRunner()
+
+        # Experiment 1 - only CLI
+        inputs_1 = ["whatever", "--target-wpm", "12"]
+        if location == "outside_cache":
+            inputs_1.extend(["--config", str(config_file_path)])
+
+        result_1 = runner.invoke(raw_fn, inputs_1)
+
+        assert result_1.exit_code == 0
+
+        assert fake_main_basic.call_count == 1
+        kwargs_1 = fake_main_basic.call_args[1]
+        assert kwargs_1["target_wpm"] == 12
+
+        # Experiment 2 - nowhere
+        inputs_2 = ["whatever"]
+        if location == "outside_cache":
+            inputs_2.extend(["--config", str(config_file_path)])
+
+        result_2 = runner.invoke(raw_fn, inputs_2)
+
+        assert result_2.exit_code == 0
+
+        assert fake_main_basic.call_count == 2
+        kwargs_2 = fake_main_basic.call_args[1]
+        assert kwargs_2["target_wpm"] is None  # that is the default
+
+        # Experiment 3 - only in config (correctly specified)
+        with config_file_path.open("w") as f:
+            config = ConfigParser()
+            config["raw"] = {}
+            config["raw"]["target_wpm"] = "44"
+            config.write(f)
+        inputs_3 = ["whatever"]
+        if location == "outside_cache":
+            inputs_3.extend(["--config", str(config_file_path)])
+
+        result_3 = runner.invoke(raw_fn, inputs_3)
+
+        assert result_3.exit_code == 0
+
+        assert fake_main_basic.call_count == 3
+        kwargs_3 = fake_main_basic.call_args[1]
+        assert kwargs_3["target_wpm"] == 44
+
+        # Experiment 4 - CLI has preference over config
+        config_file_path.unlink()  # just to make it explicit
+        with config_file_path.open("w") as f:
+            config = ConfigParser()
+            config["raw"] = {}
+            config["raw"]["target_wpm"] = "44"
+            config.write(f)
+        inputs_4 = ["whatever", "--target-wpm", "13"]
+        if location == "outside_cache":
+            inputs_4.extend(["--config", str(config_file_path)])
+
+        result_4 = runner.invoke(raw_fn, inputs_4)
+
+        assert result_4.exit_code == 0
+
+        assert fake_main_basic.call_count == 4
+        kwargs_4 = fake_main_basic.call_args[1]
+        assert kwargs_4["target_wpm"] == 13
+
+
+        # Experiment 5 - misspelled in config (taking a default)
+        config_file_path.unlink()  # just to make it explicit
+        with config_file_path.open("w") as f:
+            config = ConfigParser()
+            config["raw"] = {}
+            config["raw"]["target-wpm"] = "48"  # hyphen not allowed in config
+            config.write(f)
+        inputs_5 = ["whatever"]
+        if location == "outside_cache":
+            inputs_5.extend(["--config", str(config_file_path)])
+
+        result_5 = runner.invoke(raw_fn, inputs_5)
+
+        assert result_5.exit_code == 0
+
+        assert fake_main_basic.call_count == 5
+        kwargs_5 = fake_main_basic.call_args[1]
+        assert kwargs_5["target_wpm"] is None  # that is the default
+
+        # Experiment 6 - another misspelled in config (taking a default)
+        config_file_path.unlink()  # just to make it explicit
+        with config_file_path.open("w") as f:
+            config = ConfigParser()
+            config["raw"] = {}
+            config["raw"]["--target_wpm"] = "49"  # -- not supported in config
+            config.write(f)
+        inputs_6 = ["whatever"]
+        if location == "outside_cache":
+            inputs_6.extend(["--config", str(config_file_path)])
+
+        result_6 = runner.invoke(raw_fn, inputs_6)
+
+        assert result_6.exit_code == 0
+
+        assert fake_main_basic.call_count == 6
+        kwargs_6 = fake_main_basic.call_args[1]
+        assert kwargs_6["target_wpm"] is None  # that is the default
+
+        # Experiment 7 - case insensitive config
+        config_file_path.unlink()  # just to make it explicit
+        with config_file_path.open("w") as f:
+            config = ConfigParser()
+            config["raw"] = {}
+            config["raw"]["tArgEt_wPm"] = "22"  # -- not supported in config
+            config.write(f)
+        inputs_7 = ["whatever"]
+        if location == "outside_cache":
+            inputs_7.extend(["--config", str(config_file_path)])
+
+        result_7 = runner.invoke(raw_fn, inputs_7)
+
+        assert result_7.exit_code == 0
+
+        assert fake_main_basic.call_count == 7
+        kwargs_7 = fake_main_basic.call_args[1]
+        assert kwargs_7["target_wpm"] is 22  # that is the default
