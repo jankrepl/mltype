@@ -30,6 +30,7 @@ directory) for storing all relevant data. See below the usual structure.
 .. code-block:: bash
 
    - .mltype/
+      - config.ini
       - checkpoints/
           - a/  # training checkpoints of model a
           - b/  # training checkpoints of model b
@@ -522,6 +523,62 @@ are two strategies to handle this (controled via :code:`--fill-strategy`)
 
   mlt train book.txt cool_model --illegal-chars "~{}`[]"
 
+
+
+Configuration file
+------------------
+:code:`mltype` supports a configuration file that can be used for the following
+tasks.
+
+1. Setting reasonable defaults for any of the CLI commands
+2. Defining custom parameters that cannot be set via the CLI
+
+The configuration file is optional and one does not have to create it. By default
+it should be located under :code:`~/.mltype/config.ini`. One can also pass it
+dynamically via the :code:`--config` option available for all commands.
+
+See below an example configuration file.
+
+.. code-block:: bash
+
+    [general]
+    models_dir = /home/my_models
+
+    [sample]
+    # one needs to use underscores instead of hyphens
+    n_chars = 500
+    target_wpm = 70
+
+    [raw]
+    instant_death = True
+
+
+The :code:`general` section can be used for defining special parameters
+that cannot be set via the options of the CLI. Below is a complete list
+of valid parameters.
+
+* :code:`models_dir`: Alternative location of the language models. The
+  default directory is :code:`~/.mltype/languages`. It influences the
+  behavior of :code:`ls` and :code:`sample`.
+
+All the other sections are identical to the commands names, that is
+
+* :code:`file`
+* :code:`ls`
+* :code:`random`
+* :code:`raw`
+* :code:`replay`
+* :code:`sample`
+* :code:`train`
+
+Note that if the same option is specified both in the configuartion file
+and the CLI option the CLI value will have preference.
+
+.. note::
+    **Formatting rules**
+
+    * The section names and parameter names are case insensitive
+    * One needs to use underscores instead of hyphens
 
 
 

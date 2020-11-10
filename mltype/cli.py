@@ -1,4 +1,5 @@
 """Command line interface."""
+from configparser import ConfigParser
 from collections import Counter
 import pathlib
 import pprint
@@ -6,8 +7,68 @@ import warnings
 import sys
 
 import click
+import click_config_file
+
+from mltype.utils import (
+    get_config_file_path,
+    set_config_file_path,
+)
 
 warnings.filterwarnings("ignore")
+
+
+def provider(file_path, cmd_name):
+    """Read a section from a config file.
+
+    This function is used for the `click_config_file`. The desired behavior
+    is that by default we are reading the config file from
+    `~/.mltype/config.ini`. If the user manually specifices the `--config`
+    option (available in all subcommands) then one can provide a custom path.
+
+    Importantly, one needs to use the full option names and replace
+    "-" with "_". For example, `t = 50` and `target-wpm = 50 are invalid` and
+    `target_wpm = 50` is valid.
+
+    Parameters
+    ----------
+    file_path : str or pathlib.Path
+        Path to where the config file is located.
+
+    cmd_name : str
+        Name of the command.
+
+    Returns
+    -------
+    dict
+        Keys represent the command line options and the values
+        are their desired values.
+    """
+    # Drop the default behaviour
+    provided_path = pathlib.Path(file_path)
+    default_click_path = pathlib.Path(click.get_app_dir(cmd_name)) / "config"
+
+    if provided_path == default_click_path:
+        # The user did not provide custom config file via --config
+        used_path = get_config_file_path()
+        set_config_file_path(None)  # None == defaulting to cache dir
+        if not used_path.exists():
+            return {}
+    else:
+        # The user did provide custom config file via --config
+        used_path = provided_path
+        # Enforce existence of custom config file
+        if not used_path.exists():
+            raise FileNotFoundError("The configuration file not found.")
+        # Redefine actual config file path for non-CLI settings
+        set_config_file_path(used_path)
+
+    cp = ConfigParser()
+    cp.read(used_path)
+
+    if cmd_name in cp.sections():
+        return dict(cp[cmd_name])
+    else:
+        return {}
 
 
 @click.group()
@@ -69,6 +130,7 @@ def cli():  # noqa: D400
     is_flag=True,
     help="Include whitespace characters",
 )
+@click_config_file.configuration_option(provider=provider, implicit=True)
 def file(
     path,
     start_line,
@@ -132,11 +194,18 @@ def file(
 
 
 @cli.command()
+@click_config_file.configuration_option(provider=provider, implicit=True)
 def ls():  # noqa: D400
     """List all language models"""
-    from mltype.utils import get_cache_dir
+    from mltype.utils import get_cache_dir, get_config_file
 
-    languages_dir = get_cache_dir() / "languages"
+    cp = get_config_file()
+    try:
+        predefined_path = cp["general"]["models_dir"]
+        languages_dir = get_cache_dir(predefined_path)
+
+    except KeyError:
+        languages_dir = get_cache_dir() / "languages"
 
     if not languages_dir.exists():
         return
@@ -269,6 +338,7 @@ def ls():  # noqa: D400
     help="Number of previous characters to consider for prediction",
     show_default=True,
 )
+@click_config_file.configuration_option(provider=provider, implicit=True)
 def train(
     path,
     model_name,
@@ -379,6 +449,7 @@ def train(
     type=int,
     help="The desired speed to be shown as a guide",
 )
+@click_config_file.configuration_option(provider=provider, implicit=True)
 def random(
     characters, force_perfect, instant_death, n_chars, output_file, target_wpm
 ):  # noqa: D400
@@ -436,6 +507,7 @@ def random(
     type=int,
     help="The desired speed to be shown as a guide",
 )
+@click_config_file.configuration_option(provider=provider, implicit=True)
 def raw(
     text, force_perfect, output_file, instant_death, target_wpm, raw_string
 ):  # noqa: D400
@@ -479,6 +551,7 @@ def raw(
 @click.option(
     "-w", "--overwrite", is_flag=True, help="Overwrite in place if faster"
 )
+@click_config_file.configuration_option(provider=provider, implicit=True)
 def replay(
     replay_file, force_perfect, instant_death, overwrite, target_wpm
 ):  # noqa: D400
@@ -552,6 +625,7 @@ def replay(
     is_flag=True,
     help="Show progressbar when generating text",
 )
+@click_config_file.configuration_option(provider=provider, implicit=True)
 def sample(
     model_name,
     n_chars,
@@ -568,11 +642,19 @@ def sample(
     sys.modules["mlflow"] = None
     from mltype.interactive import main_basic
     from mltype.ml import load_model, sample_text
-    from mltype.utils import get_cache_dir
+    from mltype.utils import get_cache_dir, get_config_file
 
-    model_folder = get_cache_dir() / "languages" / model_name
+    cp = get_config_file()
+    try:
+        predefined_path = cp["general"]["models_dir"]
+        languages_dir = get_cache_dir(predefined_path)
 
-    network, vocabulary = load_model(model_folder)
+    except KeyError:
+        languages_dir = get_cache_dir() / "languages"
+
+    model_path = languages_dir / model_name
+
+    network, vocabulary = load_model(model_path)
     text = sample_text(
         n_chars,
         network,
