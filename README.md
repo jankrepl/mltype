@@ -85,6 +85,7 @@ and one needs to download the entire archive.
 | JavaScript           	| Trained on https://github.com/trekhleb/javascript-algorithms    	| [link](https://drive.google.com/file/d/1npW4YN7y2d4Id0WhXVnT_0--slmPEfW0/view?usp=sharing) 	|
 | Kotlin           	| Trained on https://github.com/square/leakcanary    	                | [link](https://drive.google.com/file/d/1Ra5P4uQXOd87zimMqg8eyB6ONei9km6h/view?usp=sharing) 	|
 | Lua           	| Trained on https://github.com/nmap/nmap       	                | [link](https://drive.google.com/file/d/1MusGCJfepW9Q1G7LqgnFL_7UEc8tpsVP/view?usp=sharing) 	|
+| Perl           	| Trained on https://github.com/mojolicious/mojo       	                | [link](https://drive.google.com/file/d/14mKERFDa2SiH7vSweymk6f2d2ULSKuZ1/view?usp=sharing) 	|
 | PHP           	| Trained on https://github.com/symfony/symfony    	                | [link](https://drive.google.com/file/d/17xl168mPjeL1w8-k195RDPavOxZWUY96/view?usp=sharing) 	|
 | Python               	| Trained on https://github.com/TheAlgorithms/Python              	| [link](https://drive.google.com/file/d/14W-Ymi-h6jqNyqM5yGXyzwG25J3zzdn3/view?usp=sharing) 	|
 | R               	| Trained on https://github.com/tidyverse/ggplot2              	        | [link](https://drive.google.com/file/d/1TgZojc2--ej4UC1ksAShDLUtDBWYf7xQ/view?usp=sharing) 	|
