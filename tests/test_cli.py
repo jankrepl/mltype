@@ -9,7 +9,7 @@ import pytest
 import mltype.cli
 
 
-def command_composer(args, options, use_long=True):
+def command_composer(args, options, use_long=True, config_path=None):
     """Compose arguments and options.
 
     Parameters
@@ -22,6 +22,9 @@ def command_composer(args, options, use_long=True):
             * short_option  # str
             * long_option  # str
             * value  # str or bool
+
+    config_path : None or Path
+        If specified, then it represents the path to the config file.
     """
     s = " ".join(args) + " "
 
@@ -36,6 +39,9 @@ def command_composer(args, options, use_long=True):
         elements.append(f"{dash}{name}{value}")
 
     s += " ".join(elements)
+
+    if config_path is not None:
+        s += f" --config {config_path}"
 
     return s
 
@@ -63,6 +69,7 @@ def test_help(cmd):
 @pytest.mark.parametrize("use_long", [True, False])
 @pytest.mark.parametrize("target_wpm", [55])
 def test_file(
+    empty_config_path,
     tmpdir,
     monkeypatch,
     end_line,
@@ -97,7 +104,10 @@ def test_file(
         ("w", "include-whitespace", include_whitespace),
     ]
 
-    command = command_composer((str(file_path),), options, use_long=use_long)
+    command = command_composer((str(file_path),),
+                               options,
+                               use_long=use_long,
+                               config_path=empty_config_path)
     print(command)  # to know why it failed
 
     result = runner.invoke(file_, command)
