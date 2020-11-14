@@ -10,4 +10,3 @@ def empty_config_path(tmp_path_factory):
     config_path.touch()
 
     return config_path
-

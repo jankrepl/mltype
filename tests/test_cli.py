@@ -104,10 +104,12 @@ def test_file(
         ("w", "include-whitespace", include_whitespace),
     ]
 
-    command = command_composer((str(file_path),),
-                               options,
-                               use_long=use_long,
-                               config_path=empty_config_path)
+    command = command_composer(
+        (str(file_path),),
+        options,
+        use_long=use_long,
+        config_path=empty_config_path,
+    )
     print(command)  # to know why it failed
 
     result = runner.invoke(file_, command)
@@ -201,6 +203,7 @@ def test_ls(tmpdir, monkeypatch, dir_exists, from_config):
 @pytest.mark.parametrize("use_long", [True, False])
 @pytest.mark.parametrize("target_wpm", [55])
 def test_random(
+    empty_config_path,
     monkeypatch,
     force_perfect,
     instant_death,
@@ -223,7 +226,9 @@ def test_random(
         ("t", "target-wpm", target_wpm),
     ]
 
-    command = command_composer(("abc",), options, use_long=use_long)
+    command = command_composer(
+        ("abc",), options, use_long=use_long, config_path=empty_config_path
+    )
     print(command)  # to know why it failed
 
     result = runner.invoke(random, command)
@@ -250,6 +255,7 @@ def test_random(
 @pytest.mark.parametrize("use_long", [True, False])
 @pytest.mark.parametrize("target_wpm", [33])
 def test_raw(
+    empty_config_path,
     monkeypatch,
     force_perfect,
     instant_death,
@@ -272,7 +278,9 @@ def test_raw(
         ("t", "target-wpm", target_wpm),
     ]
 
-    command = command_composer(("Hello",), options, use_long=use_long)
+    command = command_composer(
+        ("Hello",), options, use_long=use_long, config_path=empty_config_path
+    )
     print(command)  # to know why it failed
 
     result = runner.invoke(raw, command)
@@ -297,6 +305,7 @@ def test_raw(
 @pytest.mark.parametrize("use_long", [True, False])
 @pytest.mark.parametrize("target_wpm", [55])
 def test_replay(
+    empty_config_path,
     monkeypatch,
     force_perfect,
     instant_death,
@@ -317,7 +326,9 @@ def test_replay(
         ("t", "target-wpm", target_wpm),
     ]
 
-    command = command_composer(("aa",), options, use_long=use_long)
+    command = command_composer(
+        ("aa",), options, use_long=use_long, config_path=empty_config_path
+    )
     print(command)  # to know why it failed
 
     result = runner.invoke(replay, command)
@@ -451,6 +462,7 @@ def test_sample(
 @pytest.mark.parametrize("vocab_size", [5])
 @pytest.mark.parametrize("window_size", [1])
 def test_train(
+    empty_config_path,
     tmpdir,
     monkeypatch,
     batch_size,
@@ -501,7 +513,10 @@ def test_train(
     ]
 
     command = command_composer(
-        (str(path_dir), str(path_file), "naame"), options, use_long=use_long
+        (str(path_dir), str(path_file), "naame"),
+        options,
+        use_long=use_long,
+        config_path=empty_config_path,
     )
 
     print(command)  # to know why it failed
