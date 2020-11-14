@@ -126,8 +126,9 @@ def test_strip(monkeypatch):
 
 @pytest.mark.skipif(isinstance(hecate, Mock), reason="Hecate is not installed")
 class TestHecate:
-    def test_basic(self):
-        with CustomRunner("mlt", "raw", "inside") as r:
+    def test_basic(self, empty_config_path):
+        config_option = f"--config={empty_config_path}"
+        with CustomRunner("mlt", "raw", "inside", config_option) as r:
             to = 2
             assert r.get_cursor_position() == (0, 0)
             # initial check
@@ -167,8 +168,9 @@ class TestHecate:
 
             r.await_ctext("== Statistics ==")
 
-    def test_target_speed(self):
-        with CustomRunner("mlt", "raw", "hello", "-t", "120") as r:
+    def test_target_speed(self, empty_config_path):
+        config_opt = f"--config={empty_config_path}"
+        with CustomRunner("mlt", "raw", "hello", "-t", "120", config_opt) as r:
             to = 2
             r.await_ctext(gen_fb("white", DEFAULT_BACKGROUND) + "hello")
             assert r.get_cursor_position() == (0, 0)
