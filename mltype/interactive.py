@@ -5,7 +5,7 @@ import pathlib
 
 from mltype.base import TypedText
 from mltype.base import STATUS_BACKSPACE, STATUS_CORRECT, STATUS_WRONG
-from mltype.utils import print_section
+from mltype.utils import get_config_file, print_section
 
 
 class Cursor:
@@ -140,11 +140,38 @@ class TypedTextWriter:
         self.current_ix = 0
         self.cursor = Cursor(stdscr)  # utility that will help us jump around
 
+        curses.use_default_colors()  # allow using terminal colors
+        colors = self._get_colors()
+
         self.pens = {
-            STATUS_BACKSPACE: Pen(curses.COLOR_WHITE, curses.COLOR_BLACK, 1),
-            STATUS_CORRECT: Pen(curses.COLOR_GREEN, curses.COLOR_BLACK, 2),
-            STATUS_WRONG: Pen(curses.COLOR_WHITE, curses.COLOR_RED, 3),
+            STATUS_BACKSPACE: Pen(
+                colors["color_default_foreground"],
+                colors["color_default_background"],
+                1,
+            ),
+            STATUS_CORRECT: Pen(
+                colors["color_correct_foreground"],
+                colors["color_correct_background"],
+                2,
+            ),
+            STATUS_WRONG: Pen(
+                colors["color_wrong_foreground"],
+                colors["color_wrong_background"],
+                3,
+            ),
+            "replay": Pen(
+                colors["color_replay_foreground"],
+                colors["color_replay_background"],
+                4,
+            ),
+            "target": Pen(
+                colors["color_target_foreground"],
+                colors["color_target_background"],
+                5,
+            ),
         }
+
+        stdscr.bkgd(" ", curses.color_pair(1))
 
         if self.replay_tt is not None:
             self._validate_replay()
@@ -154,11 +181,6 @@ class TypedTextWriter:
                 (x[1].ts - self.replay_tt.start_ts).total_seconds()
                 for x in self.replay_uactions
             ]
-            self.pens["replay"] = Pen(curses.COLOR_WHITE, curses.COLOR_BLUE, 4)
-        if self.target_wpm is not None:
-            self.pens["target"] = Pen(
-                curses.COLOR_WHITE, curses.COLOR_MAGENTA, 5
-            )
 
     def _validate_replay(self):
         """Check that the replay is compatible with the current text."""
@@ -280,6 +302,62 @@ class TypedTextWriter:
 
         return i_start, height, width
 
+    @staticmethod
+    def _get_colors():
+        """Get colors from the config file.
+
+        If not present we define some reasonable defaults.
+
+        Returns
+        -------
+        dict
+            The keys are the names of the colors (in plain English).
+            The values are curses tokens for those colors.
+        """
+        mapping = {
+            "terminal": -1,
+            "black": curses.COLOR_BLACK,
+            "red": curses.COLOR_RED,
+            "green": curses.COLOR_GREEN,
+            "yellow": curses.COLOR_YELLOW,
+            "blue": curses.COLOR_BLUE,
+            "magenta": curses.COLOR_MAGENTA,
+            "cyan": curses.COLOR_CYAN,
+            "white": curses.COLOR_WHITE,
+        }
+
+        cp = get_config_file()
+
+        if "general" in cp.sections():
+            general = cp["general"]
+        else:
+            general = {}
+
+        defaults = {
+            "color_default_background": "black",
+            "color_default_foreground": "white",
+            "color_correct_background": "black",
+            "color_correct_foreground": "green",
+            "color_wrong_background": "red",
+            "color_wrong_foreground": "white",
+            "color_target_background": "magenta",
+            "color_target_foreground": "white",
+            "color_replay_background": "blue",
+            "color_replay_foreground": "white",
+        }
+
+        colors = {}
+
+        for name, default in defaults.items():
+            color = general.get(name, default)
+
+            if color not in mapping:
+                raise KeyError(f"Unsupported color {color}")
+
+            colors[name] = mapping[color]
+
+        return colors
+
 
 def run_loop(
     stdscr,
@@ -294,6 +372,8 @@ def run_loop(
     writer = TypedTextWriter(
         tt, stdscr, replay_tt=replay_tt, target_wpm=target_wpm
     )
+
+    # Curses settings
     stdscr.nodelay(1)  # makes getch non-blocking
 
     while not tt.check_finished(force_perfect=force_perfect):
