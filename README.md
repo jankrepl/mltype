@@ -110,7 +110,11 @@ mlt sample my_new_model
 
 Feel free to create an issue if you want me to train a model for you. Note
 that you can also do it yourself easily by reading the documentation (`mlt 
-train`) and getting a GPU on Google Colab (or elsewhere).
+train`) and getting a GPU on Google Colab (click the badge below for a ready to
+use notebook).
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1UfcE0qaAtq2SqSZRXbFUF8yfGgQaWZ5K?usp=sharing)
+
 
 # Credits
 This project is very much motivated by the The Unreasonable Effectiveness of 
