@@ -543,6 +543,8 @@ See below an example configuration file.
 
     [general]
     models_dir = /home/my_models
+    color_default_background = terminal
+    color_wrong_foreground = yellow
 
     [sample]
     # one needs to use underscores instead of hyphens
@@ -552,7 +554,8 @@ See below an example configuration file.
     [raw]
     instant_death = True
 
-
+General section
+~~~~~~~~~~~~~~~
 The :code:`general` section can be used for defining special parameters
 that cannot be set via the options of the CLI. Below is a complete list
 of valid parameters.
@@ -561,6 +564,36 @@ of valid parameters.
   default directory is :code:`~/.mltype/languages`. It influences the
   behavior of :code:`ls` and :code:`sample`.
 
+* :code:`color_default_background`: Background color of a default character.
+  Note that it is either the character that has not been typed yet or that
+  was backspaced (error correction).
+* :code:`color_default_foreground`:  Foreground (font) color of a default
+  character
+* :code:`color_correct_background`: Background color of a correct character
+* :code:`color_correct_foreground`: Foreground color of a correct character
+* :code:`color_wrong_background`: Background color of wrong character
+* :code:`color_wrong_foreground`: Foreground color of a wrong character
+* :code:`color_replay_background`: Background color of a replay character
+* :code:`color_replay_foreground`: Foreground color of a replay character
+* :code:`color_target_background`: Background color of a target character
+* :code:`color_target_foreground`: Foreground color of a target character
+
+.. note::
+
+   **Available colors**
+
+   * :code:`terminal` - the color is inherited from the terminal
+   * :code:`black`
+   * :code:`red`
+   * :code:`green`
+   * :code:`yellow`
+   * :code:`blue`
+   * :code:`magenta`
+   * :code:`cyan`
+   * :code:`white`
+
+Other sections
+~~~~~~~~~~~~~~
 All the other sections are identical to the commands names, that is
 
 * :code:`file`
