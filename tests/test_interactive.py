@@ -1,4 +1,5 @@
 """Collection of tests covering the `interactive.py` module."""
+from configparser import ConfigParser
 from datetime import datetime
 from unittest.mock import Mock, MagicMock
 
@@ -10,7 +11,52 @@ except ImportError:
 import pytest
 
 from mltype.base import TypedText
-from mltype.interactive import main_basic
+from mltype.interactive import TypedTextWriter, main_basic
+
+
+class TestTypedTextWriter:
+    def test_colors(self, monkeypatch):
+
+        expected_keys = {
+            "color_default_background",
+            "color_default_foreground",
+            "color_correct_background",
+            "color_correct_foreground",
+            "color_wrong_background",
+            "color_wrong_foreground",
+            "color_target_background",
+            "color_target_foreground",
+            "color_replay_background",
+            "color_replay_foreground",
+        }
+
+        get_config_1 = Mock(return_value=ConfigParser())
+        monkeypatch.setattr("mltype.interactive.get_config_file", get_config_1)
+
+        colors = TypedTextWriter._get_colors()
+        assert set(colors) == expected_keys
+        assert colors["color_replay_foreground"] == 7  # white = default
+
+        # Changing a default color
+        cp_2 = ConfigParser()
+        cp_2.add_section("general")
+        cp_2["general"]["color_replay_foreground"] = "black"  # not the default
+        get_config_2 = Mock(return_value=cp_2)
+        monkeypatch.setattr("mltype.interactive.get_config_file", get_config_2)
+
+        colors = TypedTextWriter._get_colors()
+        assert set(colors) == expected_keys
+        assert colors["color_replay_foreground"] == 0  # black = not the default
+
+        cp_3 = ConfigParser()
+        cp_3.add_section("general")
+        cp_3["general"]["color_target_foreground"] = "fdsaklf"  # wrong color
+        get_config_3 = Mock(return_value=cp_3)
+        monkeypatch.setattr("mltype.interactive.get_config_file", get_config_3)
+
+        with pytest.raises(KeyError):
+            TypedTextWriter._get_colors()
+
 
 font_colors = {
     "black": 30,
