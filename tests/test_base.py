@@ -67,7 +67,6 @@ class TestTypedText:
         tt.type_character(1, "e")
 
         assert tt.elapsed_seconds > 0
-        assert tt.elapsed_seconds != tt.elapsed_seconds
 
         assert tt.n_characters == 5
         assert tt.n_correct_characters == 2
