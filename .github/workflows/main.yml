@@ -41,4 +41,4 @@ jobs:
 
     - name: Test with pytest
       run: |
-        PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python pytest --color=yes  # see tox.ini for config
+        pytest --color=yes  # see tox.ini for config
