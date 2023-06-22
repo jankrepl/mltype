@@ -120,7 +120,7 @@ class TestText2Features:
         vocabulary = ["a", "b", "c"]
 
         res_true = np.array(
-            [[1, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 0]], dtype=np.bool
+            [[1, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 0]], dtype=np.bool_
         )
         res = text2features(text, vocabulary)
 
