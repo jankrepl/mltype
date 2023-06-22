@@ -1,6 +1,10 @@
 Changelog
 =========
 
+v0.3
+----
+- [BUGFIX] Fix `np.bool` issue
+
 v0.2
 ----
 - [FEATURE] Possiblity of customization via a config file
