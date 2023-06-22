@@ -136,7 +136,7 @@ def text2features(text, vocabulary):
 
     ch2ix = {ch: ix for ix, ch in enumerate(vocabulary)}
 
-    output = np.zeros((text_size, vocab_size), dtype=np.bool)
+    output = np.zeros((text_size, vocab_size), dtype=np.bool_)
     for i, ch in enumerate(text):
         try:
             output[i, ch2ix[ch]] = True
@@ -195,7 +195,7 @@ def sample_char(
     if previous_chars:
         features = text2features(previous_chars, vocabulary)
     else:
-        features = np.zeros((1, len(vocabulary)), dtype=np.bool)
+        features = np.zeros((1, len(vocabulary)), dtype=np.bool_)
 
     network.eval()
 

@@ -16,7 +16,6 @@ from mltype.interactive import TypedTextWriter, main_basic
 
 class TestTypedTextWriter:
     def test_colors(self, monkeypatch):
-
         expected_keys = {
             "color_default_background",
             "color_default_foreground",

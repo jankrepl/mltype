@@ -120,7 +120,7 @@ class TestText2Features:
         vocabulary = ["a", "b", "c"]
 
         res_true = np.array(
-            [[1, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 0]], dtype=np.bool
+            [[1, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 0]], dtype=np.bool_
         )
         res = text2features(text, vocabulary)
 
@@ -275,7 +275,6 @@ class TestSingleCharacterLSTM:
         )
 
     def test_pl(self, monkeypatch, tmpdir):
-
         batch_size = 2
         window_size = 3
         vocab_size = 4
