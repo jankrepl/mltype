@@ -275,7 +275,6 @@ class TestSingleCharacterLSTM:
         )
 
     def test_pl(self, monkeypatch, tmpdir):
-
         batch_size = 2
         window_size = 3
         vocab_size = 4
